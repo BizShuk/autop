@@ -464,7 +464,7 @@ Wizard 依序詢問：
 
 ```javascript
 {
-    name: "AutoP codex system",
+    name: "Autop codex workspace",
     script: "autop",
     args: [
         "-c",
@@ -479,7 +479,7 @@ Wizard 依序詢問：
         "--",
         "review current workspace"
     ],
-    cwd: "/absolute/workspace/path",
+    cwd: "/absolute/workspace",
     namespace: "autop",
     instances: 1,
     optional: true,
@@ -514,7 +514,8 @@ Cron schedule 是 optional；預設 `N` 時不寫入 `cron`。輸入 `r` 時，w
 `// autop:begin <task>`／`// autop:end <task>` 管理相同 task，並以 temporary file
 加 atomic rename 寫入。`cwd` 取自執行 wizard 時的 workspace 絕對路徑，不依賴
 PM2 載入 JavaScript 時的 `__dirname`。PM2 顯示名稱固定使用
-`AutoP <client> <template>`；未指定 template 時省略最後一段。
+`Autop <client> <project-folder>`，其中 `<project-folder>` 是 `cwd` 的 project root
+folder name；名稱不再包含 template。
 
 PM2 啟動時的 environment 必須已包含 API-key client 所列的 credential
 `source_env`。OAuth client 則使用該 executable 原有的 login state。不得把 API key

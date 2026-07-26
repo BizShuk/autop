@@ -1,7 +1,7 @@
 package driver
 
 func prepareAgyProcess(client ClientConfig, prompt string, workDir string) Process {
-	args := []string{"--print"}
+	args := []string{}
 	if client.AutoApprove {
 		args = append(args, "--dangerously-skip-permissions")
 	}
@@ -11,6 +11,7 @@ func prepareAgyProcess(client ClientConfig, prompt string, workDir string) Proce
 		"--effort="+client.Effort,
 		"--add-dir",
 		workDir,
+		"-p",
 		prompt,
 	)
 	return Process{

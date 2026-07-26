@@ -252,6 +252,9 @@ func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 	if !strings.Contains(got, "cwd: "+strconv.Quote(workDir)) {
 		t.Fatalf("ecosystem config has wrong workspace cwd:\n%s", got)
 	}
+	if !strings.Contains(got, `name: "Autop agy `+filepath.Base(workDir)+`"`) {
+		t.Fatalf("ecosystem config has wrong project task name:\n%s", got)
+	}
 	if _, err := os.Stat(filepath.Join(workDir, "ecosystem.config.js")); !os.IsNotExist(err) {
 		t.Fatalf("wizard unexpectedly wrote a root ecosystem config: %v", err)
 	}

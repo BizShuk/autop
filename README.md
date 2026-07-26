@@ -87,7 +87,8 @@ credential 與 template 範例見
 
 Managed task 具備：
 
-- 名稱：`AutoP <client> <template>`
+- 名稱：`Autop <client> <project-folder>`，其中 `<project-folder>` 是 PM2 `cwd` 的
+  project root folder name
 - `namespace: "autop"`
 - `optional: true`
 - `autorestart: false`

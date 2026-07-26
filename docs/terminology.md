@@ -12,7 +12,7 @@
 | `Prepared process` | Prepared process | 已完成 CLI-specific mapping、可交給 `exec.CommandContext` 執行的 command 資料 | `../cmd/autop/driver/driver.go:Process` |
 | `Config command` | Configuration command | 由 `gosdk/cmd.ConfigCmd` 提供的 `autop config` 子命令；顯示合併設定、以 `default` 寫入 embedded `settings.example.json`，或把修改寫入 SDK 管理的 `settings.local.json` | `../cmd/autop/command.go:init()`, `../cmd/autop/defaults.go:embeddedSettings` |
 | `Wizard` | Configuration wizard | `autop wizard`（alias `autop w`）依序選擇 CLI、template、permission bypass、model、effort、task prompt 與 optional cron schedule；task prompt 以明文 positional argument 保存；cron 支援 `N`、`r` 或完整五欄格式 | `../cmd/autop/wizard.go:WizardCmd`, `runWizardCommand()` |
-| `Managed PM2 task` | Managed PM2 task | 由 wizard 以 begin/end marker 管理且設為 `optional: true` 的 app block；在含有 `cmd/autop/` 的 workspace 寫入 `ecosystem.config.js`，名稱為 `AutoP <client> <template>`，`cwd` 為 workspace 絕對路徑 | `../cmd/autop/install.go:installEcosystemTask()`, `../cmd/autop/wizard.go:resolveWizardTarget()` |
+| `Managed PM2 task` | Managed PM2 task | 由 wizard 以 begin/end marker 管理且設為 `optional: true` 的 app block；在含有 `cmd/autop/` 的 workspace 寫入 `ecosystem.config.js`，名稱為 `Autop <client> <project-folder>`，其中 `<project-folder>` 是 `cwd` 的 project root folder name；`cwd` 為 workspace 絕對路徑 | `../cmd/autop/install.go:installEcosystemTask()`, `../cmd/autop/wizard.go:resolveWizardTarget()` |
 
 ## 縮寫 (Abbreviations)
 

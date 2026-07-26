@@ -17,7 +17,7 @@ func TestInstallEcosystemCreatesFileFromClientAndTemplate(t *testing.T) {
 	}
 	got := readTestFile(t, path)
 	for _, want := range []string{
-		`name: "AutoP codex system"`,
+		`name: "Autop codex ` + filepath.Base(workDir) + `"`,
 		`script: "autop"`,
 		`args: ["-c", "codex", "-t", "system"]`,
 		"cwd: " + strconv.Quote(workDir),
@@ -91,7 +91,7 @@ func TestInstallEcosystemPreservesExistingApps(t *testing.T) {
 	if !strings.Contains(got, `args: ["-c", "agy"]`) {
 		t.Fatalf("autop args missing or include unexpected template:\n%s", got)
 	}
-	if !strings.Contains(got, `name: "AutoP agy"`) {
+	if !strings.Contains(got, `name: "Autop agy `+filepath.Base(filepath.Dir(path))+`"`) {
 		t.Fatalf("autop display name has wrong casing or fields:\n%s", got)
 	}
 	if strings.Contains(got, `"-t"`) {

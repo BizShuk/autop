@@ -47,10 +47,8 @@ func installEcosystemTask(path string, task ecosystemTask) error {
 	}
 
 	taskID := "autop-" + task.ClientID
-	displayName := "AutoP " + task.ClientID
 	if task.TemplateID != "" {
 		taskID += "-" + task.TemplateID
-		displayName += " " + task.TemplateID
 	}
 	workDir := task.WorkspaceDir
 	if workDir == "" {
@@ -60,6 +58,7 @@ func installEcosystemTask(path string, task ecosystemTask) error {
 	if err != nil {
 		return fmt.Errorf("resolve workspace directory %q: %w", workDir, err)
 	}
+	displayName := "Autop " + task.ClientID + " " + filepath.Base(workDir)
 	block := renderManagedApp(taskID, displayName, task, workDir, "        ")
 
 	content, mode, err := readEcosystem(path)
