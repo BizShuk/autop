@@ -3,9 +3,9 @@
 ## 專案結構 (Project Structure)
 
 ```tree
+main.go                       # binary entry point、signal 與 exit code
 cmd/autop/
-├── main.go                   # RootCmd、binary entry point、signal 與 exit code
-├── command.go                # root flags、runtime wiring 與 command execution
+├── command.go                # RootCmd、root flags、runtime wiring 與 command execution
 ├── settings.go               # gosdk config.Default、defaults 與 validation
 ├── defaults.go               # embed settings.example.json 並註冊 SDK default seed
 ├── settings.example.json     # 完整 client、credential 與 template 範例
@@ -19,10 +19,9 @@ cmd/autop/
 ├── runner.go                 # credential preflight 與 exec.CommandContext
 ├── wizard.go                 # interactive PM2 task wizard
 ├── install.go                # managed ecosystem.config.js atomic update
-├── ecosystem.config.js       # autop PM2 managed tasks
-├── docs/terminology.md       # autop terminology single source
-├── plans/                    # autop design plans
 └── *_test.go                 # command、settings、template、runner、wizard tests
+docs/terminology.md           # autop terminology single source
+plans/                        # autop design plans
 ```
 
 ## 技術棧 (Tech Stack)

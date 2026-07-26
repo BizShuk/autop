@@ -88,8 +88,8 @@ executable，不 source shell alias。
 ## 3. 架構位置與邊界 (Placement & Boundaries)
 
 ```tree
+main.go                  # `autop` binary、signal 與 exit code
 cmd/autop/
-├── main.go             # `autop` binary、signal 與 exit code
 ├── command.go          # Cobra flags、stdin/argument prompt input
 ├── settings.go         # config.Default、defaults、decode 與 validation
 ├── settings.example.json # 完整 client 與 template 設定參考
@@ -112,9 +112,10 @@ cmd/autop/
 Memory 等非 `autop` 程序；使用 PM2 載入 `cmd/autop/ecosystem.config.js` 啟動
 `autop` tasks。
 
-`cmd/autop` 的 command、設定載入、template、runner 與 wizard 保持在 `main`
-package；純 CLI process mapping 下沉至獨立 `cmd/autop/driver` package。Driver
-不依賴 Cobra 或 Viper，可由其他 composition root 重用。
+`cmd/autop` 的 command、設定載入、template、runner 與 wizard 保持在 `autop`
+package；repo root 的 `main.go` 是 composition root。純 CLI process mapping 下沉至
+獨立 `cmd/autop/driver` package。Driver 不依賴 Cobra 或 Viper，可由其他 composition
+root 重用。
 
 ```mermaid
 flowchart LR

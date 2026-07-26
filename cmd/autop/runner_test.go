@@ -1,4 +1,4 @@
-package main
+package autop
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	autopdriver "github.com/bizshuk/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
 )
 
 func TestRunProcessLogsCommandBeforeExecution(t *testing.T) {
@@ -81,7 +81,7 @@ func TestRunProcessPreservesChildExitCode(t *testing.T) {
 	if !errors.As(err, &exitError) {
 		t.Fatalf("error = %v, want exec.ExitError", err)
 	}
-	if got := commandExitCode(err); got != 7 {
-		t.Fatalf("commandExitCode() = %d, want 7", got)
+	if got := CommandExitCode(err); got != 7 {
+		t.Fatalf("CommandExitCode() = %d, want 7", got)
 	}
 }

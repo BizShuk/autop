@@ -1,4 +1,4 @@
-package main
+package autop
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode"
 
-	autopdriver "github.com/bizshuk/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
 )
 
 func runProcess(

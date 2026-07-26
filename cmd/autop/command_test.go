@@ -1,4 +1,4 @@
-package main
+package autop
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	autopdriver "github.com/bizshuk/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -46,6 +46,13 @@ func resetRootCommandForTest() {
 	RootCmd.SetIn(nil)
 	RootCmd.SetOut(nil)
 	RootCmd.SetErr(nil)
+}
+
+func TestCommandPackageExposesExecute(t *testing.T) {
+	var execute func(context.Context) error = Execute
+	if execute == nil {
+		t.Fatal("Execute must be available to the root entrypoint")
+	}
 }
 
 func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {

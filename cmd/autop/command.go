@@ -1,14 +1,16 @@
-package main
+package autop
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"strings"
 
-	autopdriver "github.com/bizshuk/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"
 )
@@ -18,6 +20,16 @@ type commandDependencies struct {
 	lookupEnv autopdriver.LookupEnv
 	run       func(context.Context, autopdriver.Process, io.Writer, io.Writer, *slog.Logger) error
 	logger    *slog.Logger
+}
+
+// RootCmd is the top-level autop command.
+var RootCmd = &cobra.Command{
+	Use:           "autop [prompt]",
+	Short:         "Run a configured local LLM CLI through one facade",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	Args:          cobra.ArbitraryArgs,
+	RunE:          runRootCommand,
 }
 
 var (
@@ -38,6 +50,25 @@ func defaultCommandDependencies() commandDependencies {
 		run:       runProcess,
 		logger:    slog.Default(),
 	}
+}
+
+// Execute loads runtime settings and executes the configured command.
+func Execute(ctx context.Context) error {
+	settings, err := loadSettings()
+	if err != nil {
+		return fmt.Errorf("load autop settings: %w", err)
+	}
+	configureCommandRuntime(settings, defaultCommandDependencies())
+	return RootCmd.ExecuteContext(ctx)
+}
+
+// CommandExitCode returns the child process exit code or the generic command error code.
+func CommandExitCode(err error) int {
+	var exitError *exec.ExitError
+	if errors.As(err, &exitError) {
+		return exitError.ExitCode()
+	}
+	return 2
 }
 
 func init() {

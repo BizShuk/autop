@@ -1,11 +1,11 @@
-package main
+package autop
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 
-	autopdriver "github.com/bizshuk/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
 	gosdkconfig "github.com/bizshuk/gosdk/config"
 	"github.com/spf13/viper"
 )

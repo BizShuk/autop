@@ -51,7 +51,7 @@ autop config --update clients.codex.model=gpt-5.5
 Credential 不由 `autop` 保存或輸出：OAuth 使用各 CLI 原有 login state；API-key
 client 從設定的 environment variable 繼承 secret。
 
-`settings.example.json` 會在建置時嵌入 binary，`autop config default` 才會寫入
+`cmd/autop/settings.example.json` 會在建置時嵌入 binary，`autop config default` 才會寫入
 user-level config；既有 `settings.json` 預設保留，需明確使用 `--merge` 或 `--force`。
 
 ## Client 與 template
@@ -67,7 +67,8 @@ user-level config；既有 `settings.json` 預設保留，需明確使用 `--mer
 - `claudet`（預設停用，待 credential contract 完成）
 
 內建 template：`system`、`auto-evolving` 與 `codex-base`。完整 client、model、effort、
-credential 與 template 範例見 [`settings.example.json`](settings.example.json)。
+credential 與 template 範例見
+[`cmd/autop/settings.example.json`](cmd/autop/settings.example.json)。
 
 設定中的 `auto_approve` 只作為 wizard 的 bypass 預設值；直接執行時必須明確提供
 `--bypass-permission=true`，才會映射 provider dangerous flag：
