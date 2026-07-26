@@ -1,0 +1,197 @@
+{
+  "default_client": "codex",
+  "clients": {
+    "agy": {
+      "disabled": false,
+      "driver": "agy",
+      "command": "agy",
+      "auto_approve": true,
+      "model": "gemini-3.6-flash-high",
+      "models": [
+        "gemini-3.6-flash-high",
+        "gemini-3.6-flash-medium",
+        "gemini-3.6-flash-low",
+        "gemini-3.5-flash-high",
+        "gemini-3.5-flash-medium",
+        "gemini-3.5-flash-low",
+        "gemini-3.1-pro-high",
+        "gemini-3.1-pro-low",
+        "claude-sonnet-4-6",
+        "claude-opus-4-6-thinking",
+        "gpt-oss-120b-medium"
+      ],
+      "effort": "high",
+      "efforts": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "oauth"
+      }
+    },
+    "codex": {
+      "disabled": false,
+      "driver": "codex",
+      "command": "codex",
+      "auto_approve": true,
+      "model": "gpt-5.6-sol",
+      "models": [
+        "gpt-5.6-sol",
+        "gpt-5.6-luna",
+        "gpt-5.5",
+        "gpt-5.3-codex-spark"
+      ],
+      "effort": "xhigh",
+      "efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "prompt_transport": "stdin",
+      "credential": {
+        "mode": "oauth"
+      }
+    },
+    "claude": {
+      "disabled": false,
+      "driver": "claude",
+      "command": "claude",
+      "auto_approve": true,
+      "model": "opus",
+      "models": [
+        "opus",
+        "sonnet",
+        "haiku"
+      ],
+      "effort": "max",
+      "efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "settings": "~/projects/cc-plugin/config/settings.json",
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "oauth"
+      }
+    },
+    "claudem": {
+      "disabled": false,
+      "driver": "claude",
+      "command": "claude",
+      "auto_approve": true,
+      "model": "MiniMax-M3",
+      "models": [
+        "MiniMax-M3",
+        "MiniMax-M2.7",
+        "MiniMax-M2.5"
+      ],
+      "effort": "xhigh",
+      "efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "settings": "~/projects/cc-plugin/config/minimax.json",
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "env",
+        "source_env": "MINIMAX_API_KEY",
+        "target_env": "ANTHROPIC_AUTH_TOKEN"
+      }
+    },
+    "claudew": {
+      "disabled": false,
+      "driver": "claude",
+      "command": "claude",
+      "auto_approve": true,
+      "model": "minimax-m3",
+      "models": [
+        "minimax-m3",
+        "glm-5.2",
+        "minimax-m2.7",
+        "gpt-5.3-codex"
+      ],
+      "effort": "xhigh",
+      "efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "settings": "~/projects/cc-plugin/config/llmbox.json",
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "env",
+        "source_env": "TIKTOK_API_KEY",
+        "target_env": "ANTHROPIC_AUTH_TOKEN"
+      }
+    },
+    "claudep": {
+      "disabled": false,
+      "driver": "claude",
+      "command": "claude",
+      "auto_approve": true,
+      "model": "gemini-3.5-flash",
+      "models": [
+        "gemini-3.5-flash",
+        "gpt-5.6-sol",
+        "Minimax-M3",
+        "claude-haiku-4-5",
+        "grok-4.5-latest"
+      ],
+      "effort": "high",
+      "efforts": [
+        "max",
+        "xhigh",
+        "high",
+        "medium",
+        "low"
+      ],
+      "settings": "~/projects/cc-plugin/config/proxy.json",
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "env",
+        "source_env": "AGENTSDK_PROXY_API_KEY",
+        "target_env": "ANTHROPIC_AUTH_TOKEN"
+      }
+    },
+    "claudet": {
+      "disabled": true,
+      "driver": "claude",
+      "command": "claude",
+      "auto_approve": false,
+      "model": "",
+      "models": [],
+      "effort": "",
+      "efforts": [],
+      "settings": "",
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "env",
+        "source_env": "",
+        "target_env": "ANTHROPIC_AUTH_TOKEN"
+      }
+    }
+  },
+  "templates": {
+    "system": {
+      "content": "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}"
+    },
+    "auto-evolving": {
+      "content": "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}"
+    },
+    "codex-base": {
+      "file": "~/projects/cc-plugin/pkg/system-prompts/CL4R1T4S/OPENAI/Codex.md"
+    }
+  }
+}
