@@ -1,5 +1,3 @@
-github.com/bizshuk/autop v0.0.0-20260726155237-6b0aa0154a13 h1:U8ak7f99911p7fJP1/jqRHg51Kw/bKEZDl9mSLEBldo=
-github.com/bizshuk/autop v0.0.0-20260726155237-6b0aa0154a13/go.mod h1:cpS6ZlSW9WI4plRVprvmyVmjyOScNnpm7G5TU5w+tlI=
 github.com/bizshuk/gosdk v1.2.7 h1:GrAAosdmmBr15hQU7RLpBopTUFD3EMITNL2dJCOnASw=
 github.com/bizshuk/gosdk v1.2.7/go.mod h1:vxL6J+cB/pBLQtmmv4B/i56e5DUsVGBEUANU3+LpB5k=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=

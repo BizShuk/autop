@@ -13,7 +13,40 @@ import (
 
 	autopdriver "github.com/bizshuk/autop/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
+
+func rootCommandForTest(
+	t *testing.T,
+	settings Settings,
+	dependencies commandDependencies,
+) *cobra.Command {
+	t.Helper()
+
+	resetRootCommandForTest()
+	configureCommandRuntime(settings, dependencies)
+	t.Cleanup(func() {
+		resetRootCommandForTest()
+		configureCommandRuntime(defaultSettings(), defaultCommandDependencies())
+	})
+	return RootCmd
+}
+
+func resetRootCommandForTest() {
+	clientFlag = ""
+	templateFlag = ""
+	bypassPermissionFlag = false
+	modelFlag = ""
+	effortFlag = ""
+	RootCmd.Flags().VisitAll(func(flag *pflag.Flag) {
+		flag.Changed = false
+	})
+	RootCmd.SetArgs(nil)
+	RootCmd.SetIn(nil)
+	RootCmd.SetOut(nil)
+	RootCmd.SetErr(nil)
+}
 
 func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {
 	settings := testSettings()
@@ -33,7 +66,7 @@ func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {
 		},
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	command.SetIn(strings.NewReader(""))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -51,7 +84,7 @@ func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {
 }
 
 func TestRootCommandRegistersGosdkConfigCommand(t *testing.T) {
-	command := newRootCommand(testSettings(), defaultCommandDependencies())
+	command := rootCommandForTest(t, testSettings(), defaultCommandDependencies())
 
 	configCommand, _, err := command.Find([]string{"config"})
 	if err != nil {
@@ -83,7 +116,7 @@ func TestRootCommandDoesNotBypassWhenFlagIsOmitted(t *testing.T) {
 		},
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	command.SetIn(strings.NewReader(""))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -115,7 +148,7 @@ func TestRootCommandEnablesBypassWhenFlagIsExplicit(t *testing.T) {
 		},
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	command.SetIn(strings.NewReader(""))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -144,7 +177,7 @@ func TestWizardCommandWritesSelectedFlags(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	var wizardOutput bytes.Buffer
 	command.SetIn(strings.NewReader("agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\n\n"))
 	command.SetOut(&wizardOutput)
@@ -198,7 +231,7 @@ func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(testSettings(), dependencies)
+	command := rootCommandForTest(t, testSettings(), dependencies)
 	command.SetIn(strings.NewReader("agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\n\n"))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -225,7 +258,7 @@ func TestWizardCommandWritesOptionalCronSchedule(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(testSettings(), dependencies)
+	command := rootCommandForTest(t, testSettings(), dependencies)
 	command.SetIn(strings.NewReader(
 		"agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\n0 3 * * *\n",
 	))
@@ -250,7 +283,7 @@ func TestWizardCommandWritesRandomDailyCronWithinWindow(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(testSettings(), dependencies)
+	command := rootCommandForTest(t, testSettings(), dependencies)
 	command.SetIn(strings.NewReader("agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\nr\n"))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -298,7 +331,7 @@ func TestWizardCommandRequiresValidCustomCronFormat(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(testSettings(), dependencies)
+	command := rootCommandForTest(t, testSettings(), dependencies)
 	var wizardOutput bytes.Buffer
 	command.SetIn(strings.NewReader(
 		"agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\n0 3 * *\n0 4 * * *\n",
@@ -327,7 +360,7 @@ func TestWizardCommandRejectsCronWithInvalidCharacters(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(testSettings(), dependencies)
+	command := rootCommandForTest(t, testSettings(), dependencies)
 	var wizardOutput bytes.Buffer
 	command.SetIn(strings.NewReader(
 		"agy\nsystem\nno\ngemini-3.6-flash-high\nhigh\nreview current workspace\n0 3 * * $(date)\n*/15 2-8 * * MON-FRI\n",
@@ -352,10 +385,8 @@ func TestWizardCommandRejectsCronWithInvalidCharacters(t *testing.T) {
 }
 
 func TestWizardCommandExposesOnlyWAlias(t *testing.T) {
-	command := newWizardCommand(testSettings(), commandDependencies{})
-
-	if len(command.Aliases) != 1 || command.Aliases[0] != "w" {
-		t.Fatalf("wizard aliases = %#v, want []string{\"w\"}", command.Aliases)
+	if len(WizardCmd.Aliases) != 1 || WizardCmd.Aliases[0] != "w" {
+		t.Fatalf("wizard aliases = %#v, want []string{\"w\"}", WizardCmd.Aliases)
 	}
 }
 
@@ -367,7 +398,7 @@ func TestRootCommandRejectsPromptFromArgumentsAndStdin(t *testing.T) {
 		run:       runProcess,
 		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	command.SetIn(bytes.NewBufferString("stdin prompt"))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)
@@ -400,7 +431,7 @@ func TestRootCommandAppliesWizardRuntimeFlags(t *testing.T) {
 		},
 		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
 	}
-	command := newRootCommand(settings, dependencies)
+	command := rootCommandForTest(t, settings, dependencies)
 	command.SetIn(strings.NewReader(""))
 	command.SetOut(io.Discard)
 	command.SetErr(io.Discard)

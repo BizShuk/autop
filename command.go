@@ -20,6 +20,17 @@ type commandDependencies struct {
 	logger    *slog.Logger
 }
 
+var (
+	activeSettings     = defaultSettings()
+	activeDependencies = defaultCommandDependencies()
+
+	clientFlag           string
+	templateFlag         string
+	bypassPermissionFlag bool
+	modelFlag            string
+	effortFlag           string
+)
+
 func defaultCommandDependencies() commandDependencies {
 	return commandDependencies{
 		getwd:     os.Getwd,
@@ -29,88 +40,87 @@ func defaultCommandDependencies() commandDependencies {
 	}
 }
 
-func newRootCommand(settings Settings, dependencies commandDependencies) *cobra.Command {
-	var clientFlag string
-	var templateFlag string
-	var bypassPermissionFlag bool
-	var modelFlag string
-	var effortFlag string
-
-	root := &cobra.Command{
-		Use:           "autop [prompt]",
-		Short:         "Run a configured local LLM CLI through one facade",
-		SilenceErrors: true,
-		SilenceUsage:  true,
-		Args:          cobra.ArbitraryArgs,
-		RunE: func(command *cobra.Command, args []string) error {
-			workDir, err := dependencies.getwd()
-			if err != nil {
-				return fmt.Errorf("get current working directory: %w", err)
-			}
-			clientID, client, err := resolveClient(settings, clientFlag)
-			if err != nil {
-				return err
-			}
-			// Permission bypass is an explicit command-level opt-in. The profile's
-			// AutoApprove value is used by the wizard as its default choice, but
-			// must not implicitly enable dangerous provider flags for direct runs.
-			bypassPermission := &bypassPermissionFlag
-			client, err = applyClientOverrides(
-				clientID,
-				client,
-				modelFlag,
-				effortFlag,
-				bypassPermission,
-			)
-			if err != nil {
-				return err
-			}
-			rawPrompt, err := readPrompt(command.InOrStdin(), args)
-			if err != nil {
-				return err
-			}
-			prompt, err := renderPrompt(settings, templateFlag, rawPrompt, workDir, clientID)
-			if err != nil {
-				return err
-			}
-			process, err := autopdriver.Prepare(
-				clientID,
-				client,
-				prompt,
-				workDir,
-				dependencies.lookupEnv,
-			)
-			if err != nil {
-				return err
-			}
-			return dependencies.run(
-				command.Context(),
-				process,
-				command.OutOrStdout(),
-				command.ErrOrStderr(),
-				dependencies.logger,
-			)
-		},
-	}
-	root.Flags().StringVarP(&clientFlag, "client", "c", "", "configured LLM CLI client")
-	root.Flags().StringVarP(
+func init() {
+	flags := RootCmd.Flags()
+	flags.StringVarP(&clientFlag, "client", "c", "", "configured LLM CLI client")
+	flags.StringVarP(
 		&templateFlag,
 		"template",
 		"t",
 		"",
 		"configured prompt template",
 	)
-	root.Flags().BoolVar(
+	flags.BoolVar(
 		&bypassPermissionFlag,
 		"bypass-permission",
 		false,
 		"bypass the selected CLI permission checks",
 	)
-	root.Flags().StringVar(&modelFlag, "model", "", "override the configured client model")
-	root.Flags().StringVar(&effortFlag, "effort", "", "override the configured client effort")
-	root.AddCommand(newWizardCommand(settings, dependencies))
-	root.AddCommand(gosdkcmd.ConfigCmd)
-	return root
+	flags.StringVar(&modelFlag, "model", "", "override the configured client model")
+	flags.StringVar(&effortFlag, "effort", "", "override the configured client effort")
+
+	RootCmd.AddCommand(WizardCmd, gosdkcmd.ConfigCmd)
+}
+
+func configureCommandRuntime(settings Settings, dependencies commandDependencies) {
+	activeSettings = settings
+	activeDependencies = dependencies
+}
+
+func runRootCommand(command *cobra.Command, args []string) error {
+	workDir, err := activeDependencies.getwd()
+	if err != nil {
+		return fmt.Errorf("get current working directory: %w", err)
+	}
+	clientID, client, err := resolveClient(activeSettings, clientFlag)
+	if err != nil {
+		return err
+	}
+	// Permission bypass is an explicit command-level opt-in. The profile's
+	// AutoApprove value is used by the wizard as its default choice, but
+	// must not implicitly enable dangerous provider flags for direct runs.
+	bypassPermission := &bypassPermissionFlag
+	client, err = applyClientOverrides(
+		clientID,
+		client,
+		modelFlag,
+		effortFlag,
+		bypassPermission,
+	)
+	if err != nil {
+		return err
+	}
+	rawPrompt, err := readPrompt(command.InOrStdin(), args)
+	if err != nil {
+		return err
+	}
+	prompt, err := renderPrompt(
+		activeSettings,
+		templateFlag,
+		rawPrompt,
+		workDir,
+		clientID,
+	)
+	if err != nil {
+		return err
+	}
+	process, err := autopdriver.Prepare(
+		clientID,
+		client,
+		prompt,
+		workDir,
+		activeDependencies.lookupEnv,
+	)
+	if err != nil {
+		return err
+	}
+	return activeDependencies.run(
+		command.Context(),
+		process,
+		command.OutOrStdout(),
+		command.ErrOrStderr(),
+		activeDependencies.logger,
+	)
 }
 
 func readPrompt(stdin io.Reader, args []string) (string, error) {

@@ -4,8 +4,8 @@
 
 ```tree
 cmd/autop/
-├── main.go                   # binary entry point、signal 與 exit code
-├── command.go                # Cobra root、client/template/permission flags
+├── main.go                   # RootCmd、binary entry point、signal 與 exit code
+├── command.go                # root flags、runtime wiring 與 command execution
 ├── settings.go               # gosdk config.Default、defaults 與 validation
 ├── defaults.go               # embed settings.example.json 並註冊 SDK default seed
 ├── settings.example.json     # 完整 client、credential 與 template 範例
@@ -44,6 +44,9 @@ cmd/autop/
   `default`、`--update`、`--add`、`--delete`、`--append` 與 `--remove-from` 由 SDK
   管理寫入檔案。`settings.example.json` 以 `go:embed` 註冊為 `settings.json` 的
   default seed；`autop config default` 才會顯式建立 user-level 設定。
+- Cobra command 採 gosdk 慣例：`RootCmd` 與 `WizardCmd` 是 exported package-level
+  vars，flags 與 subcommands 由 `init()` 註冊；測試每次執行 singleton command 前重設
+  bound values 與 `pflag.Flag.Changed`。
 - Profile 的 `auto_approve` 只提供 wizard 預設值。直接執行必須明確提供
   `--bypass-permission=true` 才加入 dangerous permission flag。
 - Prompt template 使用 Go `text/template`。Codex skill 使用 `$` prefix；agy 與 Claude

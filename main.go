@@ -10,7 +10,18 @@ import (
 	"syscall"
 
 	_ "github.com/bizshuk/gosdk/log"
+	"github.com/spf13/cobra"
 )
+
+// RootCmd is the top-level autop command.
+var RootCmd = &cobra.Command{
+	Use:           "autop [prompt]",
+	Short:         "Run a configured local LLM CLI through one facade",
+	SilenceErrors: true,
+	SilenceUsage:  true,
+	Args:          cobra.ArbitraryArgs,
+	RunE:          runRootCommand,
+}
 
 func main() {
 	settings, err := loadSettings()
@@ -22,8 +33,8 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	command := newRootCommand(settings, defaultCommandDependencies())
-	if err := command.ExecuteContext(ctx); err != nil {
+	configureCommandRuntime(settings, defaultCommandDependencies())
+	if err := RootCmd.ExecuteContext(ctx); err != nil {
 		slog.Error("autop command failed", "err", err)
 		os.Exit(commandExitCode(err))
 	}

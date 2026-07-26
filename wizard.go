@@ -17,145 +17,146 @@ import (
 
 const noTemplateChoice = "(none)"
 
-func newWizardCommand(settings Settings, dependencies commandDependencies) *cobra.Command {
-	return &cobra.Command{
-		Use:     "wizard",
-		Aliases: []string{"w"},
-		Short:   "Interactively configure an autop PM2 task",
-		Args:    cobra.NoArgs,
-		RunE: func(command *cobra.Command, _ []string) error {
-			workDir, err := dependencies.getwd()
-			if err != nil {
-				return fmt.Errorf("get current working directory: %w", err)
-			}
-			reader := bufio.NewReader(command.InOrStdin())
-			writer := command.OutOrStdout()
+// WizardCmd interactively configures an autop PM2 task.
+var WizardCmd = &cobra.Command{
+	Use:     "wizard",
+	Aliases: []string{"w"},
+	Short:   "Interactively configure an autop PM2 task",
+	Args:    cobra.NoArgs,
+	RunE:    runWizardCommand,
+}
 
-			clientID, err := promptChoice(
-				reader,
-				writer,
-				"Choose CLI",
-				enabledClientIDs(settings),
-				settings.DefaultClient,
-			)
-			if err != nil {
-				return err
-			}
-			_, client, err := resolveClient(settings, clientID)
-			if err != nil {
-				return err
-			}
-
-			templateID, err := promptChoice(
-				reader,
-				writer,
-				"Choose template",
-				templateChoices(settings),
-				noTemplateChoice,
-			)
-			if err != nil {
-				return err
-			}
-			if templateID == noTemplateChoice {
-				templateID = ""
-			}
-
-			bypassDefault := "no"
-			if client.AutoApprove {
-				bypassDefault = "yes"
-			}
-			bypassChoice, err := promptChoice(
-				reader,
-				writer,
-				"Bypass permission",
-				[]string{"yes", "no"},
-				bypassDefault,
-			)
-			if err != nil {
-				return err
-			}
-			bypassPermission := bypassChoice == "yes"
-
-			model, err := promptChoice(
-				reader,
-				writer,
-				"Choose model",
-				clientModelChoices(client),
-				client.Model,
-			)
-			if err != nil {
-				return err
-			}
-			effort, err := promptChoice(
-				reader,
-				writer,
-				"Choose effort",
-				clientEffortChoices(client),
-				client.Effort,
-			)
-			if err != nil {
-				return err
-			}
-			if _, err := applyClientOverrides(
-				clientID,
-				client,
-				model,
-				effort,
-				&bypassPermission,
-			); err != nil {
-				return err
-			}
-
-			prompt, err := promptTaskInput(reader, writer, templateID)
-			if err != nil {
-				return err
-			}
-
-			cronSchedule, err := promptCronSchedule(reader, writer)
-			if err != nil {
-				return err
-			}
-
-			path, workspaceDir, err := resolveWizardTarget(workDir)
-			if err != nil {
-				return err
-			}
-			task := ecosystemTask{
-				ClientID:              clientID,
-				TemplateID:            templateID,
-				Prompt:                prompt,
-				WorkspaceDir:          workspaceDir,
-				BypassPermission:      bypassPermission,
-				Model:                 model,
-				Effort:                effort,
-				Cron:                  cronSchedule,
-				IncludeRuntimeOptions: true,
-			}
-			if err := installEcosystemTask(path, task); err != nil {
-				return err
-			}
-			dependencies.logger.Info(
-				"configured autop PM2 task",
-				"path",
-				path,
-				"workspace",
-				workspaceDir,
-				"client",
-				clientID,
-				"template",
-				templateID,
-				"bypass_permission",
-				bypassPermission,
-				"model",
-				model,
-				"effort",
-				effort,
-				"cron",
-				cronSchedule,
-			)
-			return nil
-		},
+func runWizardCommand(command *cobra.Command, _ []string) error {
+	workDir, err := activeDependencies.getwd()
+	if err != nil {
+		return fmt.Errorf("get current working directory: %w", err)
 	}
+	reader := bufio.NewReader(command.InOrStdin())
+	writer := command.OutOrStdout()
+
+	clientID, err := promptChoice(
+		reader,
+		writer,
+		"Choose CLI",
+		enabledClientIDs(activeSettings),
+		activeSettings.DefaultClient,
+	)
+	if err != nil {
+		return err
+	}
+	_, client, err := resolveClient(activeSettings, clientID)
+	if err != nil {
+		return err
+	}
+
+	templateID, err := promptChoice(
+		reader,
+		writer,
+		"Choose template",
+		templateChoices(activeSettings),
+		noTemplateChoice,
+	)
+	if err != nil {
+		return err
+	}
+	if templateID == noTemplateChoice {
+		templateID = ""
+	}
+
+	bypassDefault := "no"
+	if client.AutoApprove {
+		bypassDefault = "yes"
+	}
+	bypassChoice, err := promptChoice(
+		reader,
+		writer,
+		"Bypass permission",
+		[]string{"yes", "no"},
+		bypassDefault,
+	)
+	if err != nil {
+		return err
+	}
+	bypassPermission := bypassChoice == "yes"
+
+	model, err := promptChoice(
+		reader,
+		writer,
+		"Choose model",
+		clientModelChoices(client),
+		client.Model,
+	)
+	if err != nil {
+		return err
+	}
+	effort, err := promptChoice(
+		reader,
+		writer,
+		"Choose effort",
+		clientEffortChoices(client),
+		client.Effort,
+	)
+	if err != nil {
+		return err
+	}
+	if _, err := applyClientOverrides(
+		clientID,
+		client,
+		model,
+		effort,
+		&bypassPermission,
+	); err != nil {
+		return err
+	}
+
+	prompt, err := promptTaskInput(reader, writer, templateID)
+	if err != nil {
+		return err
+	}
+
+	cronSchedule, err := promptCronSchedule(reader, writer)
+	if err != nil {
+		return err
+	}
+
+	path, workspaceDir, err := resolveWizardTarget(workDir)
+	if err != nil {
+		return err
+	}
+	task := ecosystemTask{
+		ClientID:              clientID,
+		TemplateID:            templateID,
+		Prompt:                prompt,
+		WorkspaceDir:          workspaceDir,
+		BypassPermission:      bypassPermission,
+		Model:                 model,
+		Effort:                effort,
+		Cron:                  cronSchedule,
+		IncludeRuntimeOptions: true,
+	}
+	if err := installEcosystemTask(path, task); err != nil {
+		return err
+	}
+	activeDependencies.logger.Info(
+		"configured autop PM2 task",
+		"path",
+		path,
+		"workspace",
+		workspaceDir,
+		"client",
+		clientID,
+		"template",
+		templateID,
+		"bypass_permission",
+		bypassPermission,
+		"model",
+		model,
+		"effort",
+		effort,
+		"cron",
+		cronSchedule,
+	)
+	return nil
 }
 
 func resolveWizardTarget(workDir string) (configPath string, workspaceDir string, err error) {
