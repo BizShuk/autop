@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	autopdriver "github.com/bizshuk/cc-plugin/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/driver"
 	gosdkconfig "github.com/bizshuk/gosdk/config"
 	"github.com/spf13/viper"
 )
@@ -35,8 +35,10 @@ type Settings struct {
 	Templates     map[string]PromptTemplate `json:"templates" mapstructure:"templates"`
 }
 
-type ClientConfig = autopdriver.ClientConfig
-type CredentialConfig = autopdriver.CredentialConfig
+type (
+	ClientConfig     = autopdriver.ClientConfig
+	CredentialConfig = autopdriver.CredentialConfig
+)
 
 // PromptTemplate is an inline or file-backed Go text template.
 type PromptTemplate struct {

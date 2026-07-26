@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode"
 
-	autopdriver "github.com/bizshuk/cc-plugin/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/driver"
 )
 
 func runProcess(

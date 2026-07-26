@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	autopdriver "github.com/bizshuk/cc-plugin/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"
 )
