@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	autopdriver "github.com/bizshuk/cc-plugin/cmd/autop/driver"
+	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 )
 
 func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {
@@ -46,6 +47,21 @@ func TestRootCommandUsesDefaultClientAndTemplate(t *testing.T) {
 	}
 	if captured.Stdin != "run $system-planner for current workspace" {
 		t.Fatalf("process.Stdin = %q", captured.Stdin)
+	}
+}
+
+func TestRootCommandRegistersGosdkConfigCommand(t *testing.T) {
+	command := newRootCommand(testSettings(), defaultCommandDependencies())
+
+	configCommand, _, err := command.Find([]string{"config"})
+	if err != nil {
+		t.Fatalf("Find(config) error = %v", err)
+	}
+	if configCommand != gosdkcmd.ConfigCmd {
+		t.Fatalf("config command = %#v, want gosdk config command", configCommand)
+	}
+	if _, _, err := configCommand.Find([]string{"default"}); err != nil {
+		t.Fatalf("config default subcommand is not registered: %v", err)
 	}
 }
 

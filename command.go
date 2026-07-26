@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	autopdriver "github.com/bizshuk/cc-plugin/cmd/autop/driver"
+	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"
 )
 
@@ -108,6 +109,7 @@ func newRootCommand(settings Settings, dependencies commandDependencies) *cobra.
 	root.Flags().StringVar(&modelFlag, "model", "", "override the configured client model")
 	root.Flags().StringVar(&effortFlag, "effort", "", "override the configured client effort")
 	root.AddCommand(newWizardCommand(settings, dependencies))
+	root.AddCommand(gosdkcmd.ConfigCmd)
 	return root
 }
 

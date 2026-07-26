@@ -3,10 +3,13 @@ package main
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 
+	gosdkconfigcmd "github.com/bizshuk/gosdk/cmd/config"
+	gosdkconfig "github.com/bizshuk/gosdk/config"
 	"github.com/spf13/viper"
 )
 
@@ -237,6 +240,44 @@ func TestExampleSettingsIsValid(t *testing.T) {
 	}
 	if err := validateSettings(settings); err != nil {
 		t.Fatalf("validateSettings() error = %v", err)
+	}
+}
+
+func TestExampleSettingsIsRegisteredAsSDKDefault(t *testing.T) {
+	if !contains(gosdkconfigcmd.RegisteredDefaults(), "settings.json") {
+		t.Fatalf("registered defaults = %#v, want settings.json", gosdkconfigcmd.RegisteredDefaults())
+	}
+
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	previousAppName := gosdkconfig.GetAppName()
+	gosdkconfig.SetAppName(appName)
+	t.Cleanup(func() { gosdkconfig.SetAppName(previousAppName) })
+
+	report, err := gosdkconfigcmd.Default(
+		"settings.json",
+		gosdkconfigcmd.DefaultModeSkip,
+		false,
+		false,
+	)
+	if err != nil {
+		t.Fatalf("Default() error = %v", err)
+	}
+	if !report.Registered || !report.Written {
+		t.Fatalf("Default() report = %#v, want registered and written", report)
+	}
+
+	got, err := os.ReadFile(filepath.Join(home, ".config", appName, "settings.json"))
+	if err != nil {
+		t.Fatalf("ReadFile() error = %v", err)
+	}
+	want, err := os.ReadFile("settings.example.json")
+	if err != nil {
+		t.Fatalf("ReadFile(settings.example.json) error = %v", err)
+	}
+	if string(got) != string(want) {
+		t.Fatalf("seeded settings differ from settings.example.json")
 	}
 }
 
