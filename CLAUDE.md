@@ -77,7 +77,7 @@ Provider permission mapping：
 ```bash
 go test ./cmd/autop/... -count=1
 go vet ./...
-go build ./cmd/autop
+go build .
 ```
 
 完整 repository 驗證：

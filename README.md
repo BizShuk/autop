@@ -7,8 +7,8 @@
 ## 使用方式
 
 ```bash
-# 從 cc-plugin workspace root 安裝 binary
-go install ./cmd/autop
+# 從 repository root 安裝 binary
+go install .
 
 # 使用 default client，不套 template
 printf '%s' 'summarize current workspace' | autop
@@ -105,7 +105,7 @@ Root [`ecosystem.config.js`](../../ecosystem.config.js) 只聚合非 autop 的�
 ```bash
 go test ./cmd/autop/... -count=1
 go vet ./...
-go build ./cmd/autop
+go build .
 ```
 
 技術脈絡見 [`CLAUDE.md`](CLAUDE.md)，術語單一定義見

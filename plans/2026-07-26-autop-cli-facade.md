@@ -107,8 +107,9 @@ cmd/autop/
 └── *_test.go
 ```
 
-`autop` 相關的 executable、driver、設定範本與 PM2 managed task 集中在
-`cmd/autop/`。Repository root 的 `ecosystem.config.js` 只保留 Ollama 與 Agent
+`autop` 的 command implementation、driver、設定範本與 PM2 managed task 集中在
+`cmd/autop/`；repo root 的 `main.go` 只保留 composition root。Repository root 的
+`ecosystem.config.js` 只保留 Ollama 與 Agent
 Memory 等非 `autop` 程序；使用 PM2 載入 `cmd/autop/ecosystem.config.js` 啟動
 `autop` tasks。
 
