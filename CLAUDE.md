@@ -4,7 +4,7 @@
 
 ```tree
 main.go                       # binary entry point、signal 與 exit code
-cmd/autop/
+cmd/
 ├── command.go                # RootCmd、root flags、runtime wiring 與 command execution
 ├── settings.go               # gosdk config.Default、defaults 與 validation
 ├── defaults.go               # embed settings.example.json 並註冊 SDK default seed
@@ -48,12 +48,14 @@ plans/                        # autop design plans
   bound values 與 `pflag.Flag.Changed`。
 - Profile 的 `auto_approve` 只提供 wizard 預設值。直接執行必須明確提供
   `--bypass-permission=true` 才加入 dangerous permission flag。
+- Claude profile 的 `command` 維持本機 executable 對應：`claudem` 啟動 `claudem`、
+  `claudew` 啟動 `claudew`；`claudep` 使用 `claude` 搭配 proxy settings。
 - Prompt template 使用 Go `text/template`。Codex skill 使用 `$` prefix；agy 與 Claude
   skill 使用 `/` prefix。
 - Child 啟動前用 `log/slog` 記錄 shell-safe command；credential environment 不進 log。
 - PM2 task 由 wizard 以 marker 管理、設為 `optional: true`、`autorestart: false`，並以
   atomic rename 更新 `ecosystem.config.js`。
-- 在含有 `cmd/autop/` 的 workspace，wizard 將 PM2 設定寫入本目錄，但 task `cwd` 保持
+- 在含有 `cmd/` 的 workspace，wizard 將 PM2 設定寫入本目錄，但 task `cwd` 保持
   workspace root；一般 workspace fallback 至根目錄 `ecosystem.config.js`。
 
 ## Client contract
@@ -75,7 +77,7 @@ Provider permission mapping：
 從 repository root 執行：
 
 ```bash
-go test ./cmd/autop/... -count=1
+go test ./cmd/... -count=1
 go vet ./...
 go build .
 ```

@@ -51,7 +51,7 @@ autop config --update clients.codex.model=gpt-5.5
 Credential 不由 `autop` 保存或輸出：OAuth 使用各 CLI 原有 login state；API-key
 client 從設定的 environment variable 繼承 secret。
 
-`cmd/autop/settings.example.json` 會在建置時嵌入 binary，`autop config default` 才會寫入
+`cmd/settings.example.json` 會在建置時嵌入 binary，`autop config default` 才會寫入
 user-level config；既有 `settings.json` 預設保留，需明確使用 `--merge` 或 `--force`。
 
 ## Client 與 template
@@ -66,9 +66,21 @@ user-level config；既有 `settings.json` 預設保留，需明確使用 `--mer
 - `claudep`
 - `claudet`（預設停用，待 credential contract 完成）
 
+Claude profile 的 `command` 會保留本機 executable 的一對一對應：
+
+| Profile | Executable | Settings |
+| ------- | ---------- | -------- |
+| `claude` | `claude` | `~/projects/cc-plugin/config/settings.json` |
+| `claudem` | `claudem` | `~/projects/cc-plugin/config/minimax.json` |
+| `claudew` | `claudew` | `~/projects/cc-plugin/config/llmbox.json` |
+| `claudep` | `claude` | `~/projects/cc-plugin/config/proxy.json` |
+
+例如 `autop -c claudem --bypass-permission=true -- review workspace` 會啟動
+`claudem` executable，並傳入 MiniMax settings、model 與 prompt。
+
 內建 template：`system`、`auto-evolving` 與 `codex-base`。完整 client、model、effort、
 credential 與 template 範例見
-[`cmd/autop/settings.example.json`](cmd/autop/settings.example.json)。
+[`cmd/settings.example.json`](cmd/settings.example.json)。
 
 設定中的 `auto_approve` 只作為 wizard 的 bypass 預設值；直接執行時必須明確提供
 `--bypass-permission=true`，才會映射 provider dangerous flag：
@@ -82,8 +94,8 @@ credential 與 template 範例見
 ## PM2 wizard
 
 `autop wizard` 依序詢問 CLI、template、permission bypass、model、effort、task prompt
-與 optional cron schedule。workspace 含有 `cmd/autop/` 時，task 寫入
-`cmd/autop/ecosystem.config.js`；PM2 `cwd` 仍保存 workspace root 的絕對路徑。
+與 optional cron schedule。workspace 含有 `cmd/` 時，task 寫入
+`cmd/ecosystem.config.js`；PM2 `cwd` 仍保存 workspace root 的絕對路徑。
 
 Managed task 具備：
 
@@ -95,16 +107,16 @@ Managed task 具備：
 - `// autop:begin <task>`／`// autop:end <task>` marker
 
 ```bash
-pm2 start cmd/autop/ecosystem.config.js
+pm2 start cmd/ecosystem.config.js
 ```
 
-Root [`ecosystem.config.js`](../../ecosystem.config.js) 只聚合非 autop 的常駐程序，並
+Root [`ecosystem.config.js`](ecosystem.config.js) 只聚合非 autop 的常駐程序，並
 載入本目錄的 PM2 task 定義。
 
 ## 開發
 
 ```bash
-go test ./cmd/autop/... -count=1
+go test ./cmd/... -count=1
 go vet ./...
 go build .
 ```

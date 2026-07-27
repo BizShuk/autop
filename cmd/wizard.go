@@ -166,7 +166,7 @@ func resolveWizardTarget(workDir string) (configPath string, workspaceDir string
 	}
 
 	for current := workspaceDir; ; current = filepath.Dir(current) {
-		packageDir := filepath.Join(current, "cmd", "autop")
+		packageDir := filepath.Join(current, "cmd")
 		info, statErr := os.Stat(packageDir)
 		if statErr == nil {
 			if info.IsDir() {

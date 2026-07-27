@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode"
 
-	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/driver"
 )
 
 func runProcess(
@@ -45,7 +45,11 @@ func formatCommand(process autopdriver.Process) string {
 	for _, arg := range process.Args {
 		parts = append(parts, quoteCommandPart(arg))
 	}
-	return strings.Join(parts, " ")
+	command := strings.Join(parts, " ")
+	if process.Stdin == "" {
+		return command
+	}
+	return "printf '%s' " + quoteCommandPart(process.Stdin) + " | " + command
 }
 
 func quoteCommandPart(value string) string {

@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/driver"
 	gosdkconfig "github.com/bizshuk/gosdk/config"
 	"github.com/spf13/viper"
 )
@@ -126,7 +126,7 @@ func defaultSettings() Settings {
 			},
 			"claudem": {
 				Driver:          "claude",
-				Command:         "claude",
+				Command:         "claudem",
 				AutoApprove:     true,
 				Model:           "MiniMax-M3",
 				Models:          []string{"MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"},
@@ -142,7 +142,7 @@ func defaultSettings() Settings {
 			},
 			"claudew": {
 				Driver:          "claude",
-				Command:         "claude",
+				Command:         "claudew",
 				AutoApprove:     true,
 				Model:           "minimax-m3",
 				Models:          []string{"minimax-m3", "glm-5.2", "minimax-m2.7", "gpt-5.3-codex"},

@@ -84,7 +84,7 @@
     "claudem": {
       "disabled": false,
       "driver": "claude",
-      "command": "claude",
+      "command": "claudem",
       "auto_approve": true,
       "model": "MiniMax-M3",
       "models": [
@@ -111,7 +111,7 @@
     "claudew": {
       "disabled": false,
       "driver": "claude",
-      "command": "claude",
+      "command": "claudew",
       "auto_approve": true,
       "model": "minimax-m3",
       "models": [

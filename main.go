@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	autopcmd "github.com/bizshuk/autop/cmd/autop"
+	autopcmd "github.com/bizshuk/autop/cmd"
 	_ "github.com/bizshuk/gosdk/log"
 )
 

@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/driver"
 )
 
 func TestRunProcessLogsCommandBeforeExecution(t *testing.T) {
@@ -57,6 +57,20 @@ func TestFormatCommandDoesNotIncludeEnvironment(t *testing.T) {
 	}
 	if got != `claude --model opus` {
 		t.Fatalf("formatCommand() = %q", got)
+	}
+}
+
+func TestFormatCommandIncludesStdinPipeline(t *testing.T) {
+	process := autopdriver.Process{
+		Name:  "codex",
+		Args:  []string{"exec", "-"},
+		Stdin: "/find-actiity find 5 activities in EU",
+	}
+
+	got := formatCommand(process)
+	want := `printf '%s' "/find-actiity find 5 activities in EU" | codex exec -`
+	if got != want {
+		t.Fatalf("formatCommand() = %q, want %q", got, want)
 	}
 }
 

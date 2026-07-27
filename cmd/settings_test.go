@@ -129,32 +129,37 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 
 	profileChecks := map[string]struct {
 		driver     string
+		command    string
 		model      string
 		effort     string
 		credential CredentialConfig
 	}{
 		"agy": {
 			driver:     "agy",
+			command:    "agy",
 			model:      "gemini-3.6-flash-high",
 			effort:     "high",
 			credential: CredentialConfig{Mode: "oauth"},
 		},
 		"codex": {
 			driver:     "codex",
+			command:    "codex",
 			model:      "gpt-5.6-sol",
 			effort:     "xhigh",
 			credential: CredentialConfig{Mode: "oauth"},
 		},
 		"claude": {
 			driver:     "claude",
+			command:    "claude",
 			model:      "opus",
 			effort:     "max",
 			credential: CredentialConfig{Mode: "oauth"},
 		},
 		"claudem": {
-			driver: "claude",
-			model:  "MiniMax-M3",
-			effort: "xhigh",
+			driver:  "claude",
+			command: "claudem",
+			model:   "MiniMax-M3",
+			effort:  "xhigh",
 			credential: CredentialConfig{
 				Mode:      "env",
 				SourceEnv: "MINIMAX_API_KEY",
@@ -162,9 +167,10 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 			},
 		},
 		"claudew": {
-			driver: "claude",
-			model:  "minimax-m3",
-			effort: "xhigh",
+			driver:  "claude",
+			command: "claudew",
+			model:   "minimax-m3",
+			effort:  "xhigh",
 			credential: CredentialConfig{
 				Mode:      "env",
 				SourceEnv: "TIKTOK_API_KEY",
@@ -172,9 +178,10 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 			},
 		},
 		"claudep": {
-			driver: "claude",
-			model:  "gemini-3.5-flash",
-			effort: "high",
+			driver:  "claude",
+			command: "claude",
+			model:   "gemini-3.5-flash",
+			effort:  "high",
 			credential: CredentialConfig{
 				Mode:      "env",
 				SourceEnv: "AGENTSDK_PROXY_API_KEY",
@@ -185,6 +192,7 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 	for clientID, want := range profileChecks {
 		client := settings.Clients[clientID]
 		if client.Driver != want.driver ||
+			client.Command != want.command ||
 			client.Model != want.model ||
 			client.Effort != want.effort ||
 			client.Credential != want.credential {
@@ -337,7 +345,7 @@ func testSettings() Settings {
 			},
 			"claudem": {
 				Driver:          "claude",
-				Command:         "claude",
+				Command:         "claudem",
 				AutoApprove:     true,
 				Model:           "MiniMax-M3",
 				Effort:          "xhigh",

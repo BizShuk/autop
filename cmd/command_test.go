@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	autopdriver "github.com/bizshuk/autop/cmd/autop/driver"
+	autopdriver "github.com/bizshuk/autop/cmd/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -229,7 +229,7 @@ func TestWizardCommandWritesSelectedFlags(t *testing.T) {
 
 func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 	workDir := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(workDir, "cmd", "autop"), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Join(workDir, "cmd"), 0o755); err != nil {
 		t.Fatal(err)
 	}
 	dependencies := commandDependencies{
@@ -247,7 +247,7 @@ func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 	if err := command.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
-	configPath := filepath.Join(workDir, "cmd", "autop", "ecosystem.config.js")
+	configPath := filepath.Join(workDir, "cmd", "ecosystem.config.js")
 	got := readTestFile(t, configPath)
 	if !strings.Contains(got, "cwd: "+strconv.Quote(workDir)) {
 		t.Fatalf("ecosystem config has wrong workspace cwd:\n%s", got)

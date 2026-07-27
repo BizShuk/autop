@@ -40,7 +40,7 @@ func TestPrepareAgyProcess(t *testing.T) {
 func TestPrepareClaudeProfileProcess(t *testing.T) {
 	client := ClientConfig{
 		Driver:      "claude",
-		Command:     "claude",
+		Command:     "claudem",
 		AutoApprove: true,
 		Model:       "MiniMax-M3",
 		Effort:      "xhigh",
@@ -77,8 +77,8 @@ func TestPrepareClaudeProfileProcess(t *testing.T) {
 		"-p",
 		"review repo",
 	}
-	if got.Name != "claude" || !reflect.DeepEqual(got.Args, wantArgs) {
-		t.Fatalf("process = %#v, want name claude args %#v", got, wantArgs)
+	if got.Name != "claudem" || !reflect.DeepEqual(got.Args, wantArgs) {
+		t.Fatalf("process = %#v, want name claudem args %#v", got, wantArgs)
 	}
 	if !reflect.DeepEqual(got.ExtraEnv, []string{"ANTHROPIC_AUTH_TOKEN=top-secret"}) {
 		t.Fatalf("ExtraEnv = %#v", got.ExtraEnv)
@@ -121,7 +121,7 @@ func TestPrepareCodexProcessUsesStdin(t *testing.T) {
 func TestPrepareRejectsMissingCredentialWithoutLeakingSecret(t *testing.T) {
 	client := ClientConfig{
 		Driver:  "claude",
-		Command: "claude",
+		Command: "claudem",
 		Credential: CredentialConfig{
 			Mode:      "env",
 			SourceEnv: "MINIMAX_API_KEY",

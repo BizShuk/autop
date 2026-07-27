@@ -21,8 +21,8 @@ autop [-c <client>] [-t <template>] [prompt...]
 - `-t, --template` 選擇設定檔內的 prompt template；未指定時完全跳過 template。
 - `prompt` 可由 positional arguments 或 piped stdin 提供。
 - `autop wizard` 依序選擇 CLI、template、permission bypass、client model、
-  effort、task prompt 與 optional cron schedule；workspace 含有 `cmd/autop/` 時寫入
-  `cmd/autop/ecosystem.config.js`，否則寫入 workspace 根目錄的 `ecosystem.config.js`。
+  effort、task prompt 與 optional cron schedule；workspace 含有 `cmd/` 時寫入
+  `cmd/ecosystem.config.js`，否則寫入 workspace 根目錄的 `ecosystem.config.js`。
 - 有 `-t` 時，Go 使用 `text/template` 展開 named template，再將結果注入 client。
 - 無 `-t` 時，原始 prompt 不經 template，直接注入 client。
 - Template 本身可以是完整 task，因此 `autop -c codex -t system` 不要求額外 prompt。
@@ -72,14 +72,14 @@ flowchart LR
 | `agy` | `agy --print` | 可用 flags 選 model、effort、auto approval，prompt 使用 argument |
 | `codex` | `codex exec` | 可用 flags 選 model、effort、auto approval，支援 stdin prompt |
 | `claude` | `claude -p` | 官方／OAuth profile |
-| `claudem` | `claude -p` | MiniMax profile；現有 `~/bin/claudem` 可繼續供人工直接使用 |
-| `claudew` | `claude -p` | llmbox profile；現有 `~/bin/claudew` 可繼續供人工直接使用 |
+| `claudem` | `claudem` | MiniMax profile；一對一啟動現有 `~/bin/claudem` executable |
+| `claudew` | `claudew` | llmbox profile；一對一啟動現有 `~/bin/claudew` executable |
 | `claudep` | `claude -p` | AgentSDK proxy profile；目前只有 shell alias |
 | `claudet` | `claude -p` | 尚無 executable、settings 或 credential contract，先 disabled |
 
 Shell alias 不適合作為 PM2 dependency，因為非互動程序不保證載入 login shell alias。
-因此 `claudem` 等名稱是 `autop` client profile ID；`autop` 直接啟動真正的 `claude`
-executable，不 source shell alias。
+`claudem` 與 `claudew` 已改由其同名 executable 提供一對一 profile mapping；
+`claudep` 仍直接啟動 `claude` executable，不 source shell alias。
 
 本機 `agy` headless contract 已確認包含 `--print`、`--model`、`--effort`、
 `--dangerously-skip-permissions` 與 `--add-dir`。Model selector 由 client profile
@@ -89,7 +89,7 @@ executable，不 source shell alias。
 
 ```tree
 main.go                  # `autop` binary、signal 與 exit code
-cmd/autop/
+cmd/
 ├── command.go          # Cobra flags、stdin/argument prompt input
 ├── settings.go         # config.Default、defaults、decode 與 validation
 ├── settings.example.json # 完整 client 與 template 設定參考
@@ -108,19 +108,19 @@ cmd/autop/
 ```
 
 `autop` 的 command implementation、driver、設定範本與 PM2 managed task 集中在
-`cmd/autop/`；repo root 的 `main.go` 只保留 composition root。Repository root 的
+`cmd/`；repo root 的 `main.go` 只保留 composition root。Repository root 的
 `ecosystem.config.js` 只保留 Ollama 與 Agent
-Memory 等非 `autop` 程序；使用 PM2 載入 `cmd/autop/ecosystem.config.js` 啟動
+Memory 等非 `autop` 程序；使用 PM2 載入 `cmd/ecosystem.config.js` 啟動
 `autop` tasks。
 
-`cmd/autop` 的 command、設定載入、template、runner 與 wizard 保持在 `autop`
+`cmd` 的 command、設定載入、template、runner 與 wizard 保持在 `autop`
 package；repo root 的 `main.go` 是 composition root。純 CLI process mapping 下沉至
-獨立 `cmd/autop/driver` package。Driver 不依賴 Cobra 或 Viper，可由其他 composition
+獨立 `cmd/driver` package。Driver 不依賴 Cobra 或 Viper，可由其他 composition
 root 重用。
 
 ```mermaid
 flowchart LR
-    PM2["PM2 cron task"] -->|"autop -c ... -t ..."| CLI["cmd/autop Cobra"]
+    PM2["PM2 cron task"] -->|"autop -c ... -t ..."| CLI["cmd Cobra"]
     CLI -->|"讀取"| CFG["gosdk config + Viper"]
     CLI -->|"client、raw prompt"| Render["Go template renderer"]
     CFG -->|"client definition、template"| Render
@@ -134,8 +134,8 @@ flowchart LR
 
 - PM2 只管理 schedule、cwd、log 與 process lifecycle。
 - Runtime config 是 client registry、default client 與 template registry 的單一來源。
-- `cmd/autop` 只啟動已註冊 client，不接受任意 executable override。
-- `cmd/autop/driver` 只負責 CLI argv、stdin 與 child environment，不包含任何 API request。
+- `cmd` 只啟動已註冊 client，不接受任意 executable override。
+- `cmd/driver` 只負責 CLI argv、stdin 與 child environment，不包含任何 API request。
 - `claudem` 等 Claude profiles 保留 provider settings 與 credential environment wiring。
 - `autop` 只驗證必要環境變數是否存在，不讀取、保存或記錄其值。
 
@@ -215,7 +215,7 @@ flowchart LR
     },
     "claudem": {
       "driver": "claude",
-      "command": "claude",
+      "command": "claudem",
       "auto_approve": true,
       "model": "MiniMax-M3",
       "effort": "xhigh",
@@ -229,7 +229,7 @@ flowchart LR
     },
     "claudew": {
       "driver": "claude",
-      "command": "claude",
+      "command": "claudew",
       "auto_approve": true,
       "model": "minimax-m3",
       "effort": "xhigh",
@@ -540,11 +540,11 @@ definition 中有單一來源，才能達成不必逐一重配的原始目標。
 
 ### Step 1 — 建立 standalone `autop` binary 與設定驗證
 
-- 新增 `cmd/autop`，解析 `-c`、`-t` 與 positional/stdin prompt。
-- 在 `cmd/autop/settings.go` 以 app name `autop` 初始化設定並宣告非敏感 defaults。
+- 新增 `cmd`，解析 `-c`、`-t` 與 positional/stdin prompt。
+- 在 `cmd/settings.go` 以 app name `autop` 初始化設定並宣告非敏感 defaults。
 - 實作 global Viper config decode 與 validation。
 - 測試 default client、unknown client、input precedence、deep merge 與 invalid config。
-- 回滾：移除 `cmd/autop` 與新增 defaults，不影響現有 `cc-plugin`。
+- 回滾：移除 `cmd` 與新增 defaults，不影響現有 `cc-plugin`。
 
 ### Step 2 — 實作 Go template renderer
 
@@ -584,7 +584,7 @@ definition 中有單一來源，才能達成不必逐一重配的原始目標。
 ### Step 6 — 同步專案文件
 
 - 在 `README.md` 加入 `autop` 業務流程與使用範例。
-- 在 `CLAUDE.md` 加入 `cmd/autop`、configuration contract 與關鍵決策。
+- 在 `CLAUDE.md` 加入 `cmd`、configuration contract 與關鍵決策。
 - 在 `docs/terminology.md` 定義 `autop`、`client ID`、`prompt template`。
 - 實作完成並接受後，把本計畫移至 `docs/specs/`。
 
