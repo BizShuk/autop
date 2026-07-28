@@ -49,6 +49,21 @@ func Prepare(
 		return Process{}, err
 	}
 
+	process, err := BuildProcess(clientID, client, prompt, workDir)
+	if err != nil {
+		return Process{}, err
+	}
+	process.ExtraEnv = extraEnv
+	return process, nil
+}
+
+// BuildProcess maps a client profile to an executable process without resolving credentials.
+func BuildProcess(
+	clientID string,
+	client ClientConfig,
+	prompt string,
+	workDir string,
+) (Process, error) {
 	var process Process
 	switch client.Driver {
 	case "agy":
@@ -57,6 +72,8 @@ func Prepare(
 		process = prepareClaudeProcess(client, prompt, workDir)
 	case "codex":
 		process = prepareCodexProcess(client, prompt, workDir)
+	case "grok":
+		process = prepareGrokProcess(client, prompt, workDir)
 	default:
 		return Process{}, fmt.Errorf(
 			"client %q has unsupported driver %q",
@@ -64,7 +81,6 @@ func Prepare(
 			client.Driver,
 		)
 	}
-	process.ExtraEnv = extraEnv
 	return process, nil
 }
 

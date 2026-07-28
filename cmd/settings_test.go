@@ -66,7 +66,16 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 	if err := validateSettings(settings); err != nil {
 		t.Fatalf("validateSettings() error = %v", err)
 	}
-	wantClients := []string{"agy", "claude", "claudem", "claudep", "claudet", "claudew", "codex"}
+	wantClients := []string{
+		"agy",
+		"claude",
+		"claudem",
+		"claudep",
+		"claudet",
+		"claudew",
+		"codex",
+		"grok",
+	}
 	gotClients := make([]string, 0, len(settings.Clients))
 	for _, clientID := range wantClients {
 		if _, ok := settings.Clients[clientID]; ok {
@@ -187,6 +196,13 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 				SourceEnv: "AGENTSDK_PROXY_API_KEY",
 				TargetEnv: "ANTHROPIC_AUTH_TOKEN",
 			},
+		},
+		"grok": {
+			driver:     "grok",
+			command:    "grok",
+			model:      "grok-4.5",
+			effort:     "high",
+			credential: CredentialConfig{Mode: "oauth"},
 		},
 	}
 	for clientID, want := range profileChecks {

@@ -112,6 +112,17 @@ func defaultSettings() Settings {
 				PromptTransport: "stdin",
 				Credential:      CredentialConfig{Mode: "oauth"},
 			},
+			"grok": {
+				Driver:          "grok",
+				Command:         "grok",
+				AutoApprove:     true,
+				Model:           "grok-4.5",
+				Models:          []string{"grok-4.5"},
+				Effort:          "high",
+				Efforts:         []string{"high", "medium", "low"},
+				PromptTransport: "argument",
+				Credential:      CredentialConfig{Mode: "oauth"},
+			},
 			"claude": {
 				Driver:          "claude",
 				Command:         "claude",
@@ -239,7 +250,7 @@ func validateSettings(settings Settings) error {
 
 func validateClient(id string, client ClientConfig) error {
 	switch client.Driver {
-	case "agy", "claude", "codex":
+	case "agy", "claude", "codex", "grok":
 	default:
 		return fmt.Errorf("client %q has unsupported driver %q", id, client.Driver)
 	}
@@ -256,6 +267,7 @@ func validateClient(id string, client ClientConfig) error {
 		"agy":    "argument",
 		"claude": "argument",
 		"codex":  "stdin",
+		"grok":   "argument",
 	}[client.Driver]
 	if client.PromptTransport != expectedTransport {
 		return fmt.Errorf(

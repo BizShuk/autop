@@ -21,12 +21,12 @@ func TestPrepareAgyProcess(t *testing.T) {
 		t.Fatalf("Prepare() error = %v", err)
 	}
 	wantArgs := []string{
-		"--print",
 		"--dangerously-skip-permissions",
 		"--model=gemini-3.6-flash-high",
 		"--effort=high",
 		"--add-dir",
 		"/workspace",
+		"-p",
 		"do $(touch /tmp/nope)",
 	}
 	if got.Name != "agy" || !reflect.DeepEqual(got.Args, wantArgs) {
@@ -85,6 +85,33 @@ func TestPrepareClaudeProfileProcess(t *testing.T) {
 	}
 }
 
+func TestBuildProcessDoesNotResolveCredentialEnvironment(t *testing.T) {
+	client := ClientConfig{
+		Driver:      "claude",
+		Command:     "claudem",
+		AutoApprove: true,
+		Model:       "MiniMax-M3",
+		Effort:      "xhigh",
+		Settings:    "/tmp/minimax.json",
+		Credential: CredentialConfig{
+			Mode:      "env",
+			SourceEnv: "MINIMAX_API_KEY",
+			TargetEnv: "ANTHROPIC_AUTH_TOKEN",
+		},
+	}
+
+	got, err := BuildProcess("claudem", client, "review repo", "/workspace")
+	if err != nil {
+		t.Fatalf("BuildProcess() error = %v", err)
+	}
+	if got.Name != "claudem" {
+		t.Fatalf("process.Name = %q, want claudem", got.Name)
+	}
+	if len(got.ExtraEnv) != 0 {
+		t.Fatalf("process.ExtraEnv = %#v, want no resolved credentials", got.ExtraEnv)
+	}
+}
+
 func TestPrepareCodexProcessUsesStdin(t *testing.T) {
 	client := ClientConfig{
 		Driver:      "codex",
@@ -115,6 +142,59 @@ func TestPrepareCodexProcessUsesStdin(t *testing.T) {
 	}
 	if got.Stdin != "implement feature" {
 		t.Fatalf("Stdin = %q", got.Stdin)
+	}
+}
+
+func TestPrepareCodexProcessConvertsSlashSkillPrefix(t *testing.T) {
+	client := ClientConfig{
+		Driver:     "codex",
+		Command:    "codex",
+		Model:      "gpt-5.6-sol",
+		Effort:     "xhigh",
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	got, err := Prepare("codex", client, "/xxxxxx review workspace", "/workspace", missingEnv)
+	if err != nil {
+		t.Fatalf("Prepare() error = %v", err)
+	}
+	if got.Stdin != "$xxxxxx review workspace" {
+		t.Fatalf("Stdin = %q, want slash skill prefix converted for Codex", got.Stdin)
+	}
+}
+
+func TestPrepareGrokProcess(t *testing.T) {
+	client := ClientConfig{
+		Driver:      "grok",
+		Command:     "grok",
+		AutoApprove: true,
+		Model:       "grok-4.5",
+		Effort:      "high",
+		Credential:  CredentialConfig{Mode: "oauth"},
+	}
+
+	got, err := Prepare("grok", client, "review workspace", "/workspace", missingEnv)
+	if err != nil {
+		t.Fatalf("Prepare() error = %v", err)
+	}
+	wantArgs := []string{
+		"--always-approve",
+		"--permission-mode",
+		"auto",
+		"--model",
+		"grok-4.5",
+		"--reasoning-effort",
+		"high",
+		"--cwd",
+		"/workspace",
+		"--single",
+		"review workspace",
+	}
+	if got.Name != "grok" || !reflect.DeepEqual(got.Args, wantArgs) {
+		t.Fatalf("process = %#v, want name grok args %#v", got, wantArgs)
+	}
+	if got.Stdin != "" {
+		t.Fatalf("Stdin = %q, want empty", got.Stdin)
 	}
 }
 

@@ -12,10 +12,17 @@ import (
 	"strconv"
 	"strings"
 
+	autopdriver "github.com/bizshuk/autop/cmd/driver"
 	"github.com/spf13/cobra"
 )
 
-const noTemplateChoice = "(none)"
+const (
+	noTemplateChoice = "(none)"
+	ansiCyan         = "\x1b[36m"
+	ansiGreen        = "\x1b[32m"
+	ansiMagenta      = "\x1b[35m"
+	ansiReset        = "\x1b[0m"
+)
 
 // WizardCmd interactively configures an autop PM2 task.
 var WizardCmd = &cobra.Command{
@@ -99,13 +106,14 @@ func runWizardCommand(command *cobra.Command, _ []string) error {
 	if err != nil {
 		return err
 	}
-	if _, err := applyClientOverrides(
+	client, err = applyClientOverrides(
 		clientID,
 		client,
 		model,
 		effort,
 		&bypassPermission,
-	); err != nil {
+	)
+	if err != nil {
 		return err
 	}
 
@@ -137,6 +145,15 @@ func runWizardCommand(command *cobra.Command, _ []string) error {
 	if err := installEcosystemTask(path, task); err != nil {
 		return err
 	}
+	if err := writeWizardSummary(
+		writer,
+		activeSettings,
+		client,
+		path,
+		task,
+	); err != nil {
+		return err
+	}
 	activeDependencies.logger.Info(
 		"configured autop PM2 task",
 		"path",
@@ -159,6 +176,57 @@ func runWizardCommand(command *cobra.Command, _ []string) error {
 	return nil
 }
 
+func writeWizardSummary(
+	writer io.Writer,
+	settings Settings,
+	client ClientConfig,
+	path string,
+	task ecosystemTask,
+) error {
+	prompt, err := renderPrompt(
+		settings,
+		task.TemplateID,
+		task.Prompt,
+		task.WorkspaceDir,
+		task.ClientID,
+	)
+	if err != nil {
+		return err
+	}
+	process, err := autopdriver.BuildProcess(
+		task.ClientID,
+		client,
+		prompt,
+		task.WorkspaceDir,
+	)
+	if err != nil {
+		return err
+	}
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return fmt.Errorf("read ecosystem config summary %s: %w", path, err)
+	}
+	original := autopdriver.Process{
+		Name: "autop",
+		Args: autopCommandArgs(task),
+	}
+	if _, err := fmt.Fprintf(
+		writer,
+		ansiCyan+"Original command (autop):"+ansiReset+"\n  %s\n"+
+			ansiGreen+"Execute command (%s):"+ansiReset+"\n  %s\n"+
+			ansiMagenta+"ecosystem.config.js path:"+ansiReset+"\n  %s\n"+
+			ansiMagenta+"ecosystem.config.js configuration:"+ansiReset+"\n%s",
+		formatCommand(original),
+		process.Name,
+		formatCommand(process),
+		path,
+		content,
+	); err != nil {
+		return fmt.Errorf("write wizard summary: %w", err)
+	}
+	return nil
+}
+
 func resolveWizardTarget(workDir string) (configPath string, workspaceDir string, err error) {
 	workspaceDir, err = filepath.Abs(workDir)
 	if err != nil {
@@ -166,14 +234,14 @@ func resolveWizardTarget(workDir string) (configPath string, workspaceDir string
 	}
 
 	for current := workspaceDir; ; current = filepath.Dir(current) {
-		packageDir := filepath.Join(current, "cmd")
-		info, statErr := os.Stat(packageDir)
+		cmdDir := filepath.Join(current, "cmd")
+		info, statErr := os.Stat(cmdDir)
 		if statErr == nil {
 			if info.IsDir() {
-				return filepath.Join(packageDir, "ecosystem.config.js"), current, nil
+				return filepath.Join(current, "ecosystem.config.js"), current, nil
 			}
 		} else if !errors.Is(statErr, os.ErrNotExist) {
-			return "", "", fmt.Errorf("inspect autop package directory %q: %w", packageDir, statErr)
+			return "", "", fmt.Errorf("inspect workspace cmd directory %q: %w", cmdDir, statErr)
 		}
 
 		parent := filepath.Dir(current)

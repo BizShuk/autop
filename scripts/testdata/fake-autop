@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+[[ "${1:-}" == "wizard" ]] || exit 1
+
+IFS= read -r client
+IFS= read -r template
+IFS= read -r bypass
+IFS= read -r model
+IFS= read -r effort
+IFS= read -r prompt
+IFS= read -r cron
+
+case "$client" in
+    agy | claude | claudem | claudep | claudew | codex | grok) ;;
+    *) exit 1 ;;
+esac
+[[ -z "$template" ]] || exit 1
+[[ -z "$bypass" ]] || exit 1
+[[ -z "$model" ]] || exit 1
+[[ -z "$effort" ]] || exit 1
+[[ "$prompt" == "/test '' \"\"" ]] || exit 1
+[[ "$cron" == "N" ]] || exit 1
+
+printf '%s\n' \
+    'Original command (autop):' \
+    "  autop -c $client -- '/test '\"'\"''\"'\"' \"\"'" \
+    "Execute command ($client):" \
+    "  $client '/test '\"'\"''\"'\"' \"\"'"

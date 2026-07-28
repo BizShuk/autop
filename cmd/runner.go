@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -60,5 +59,5 @@ func quoteCommandPart(value string) string {
 	}) == -1 {
 		return value
 	}
-	return strconv.Quote(value)
+	return "'" + strings.ReplaceAll(value, "'", `'"'"'`) + "'"
 }

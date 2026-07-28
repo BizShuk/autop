@@ -56,6 +56,26 @@
         "mode": "oauth"
       }
     },
+    "grok": {
+      "disabled": false,
+      "driver": "grok",
+      "command": "grok",
+      "auto_approve": true,
+      "model": "grok-4.5",
+      "models": [
+        "grok-4.5"
+      ],
+      "effort": "high",
+      "efforts": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "prompt_transport": "argument",
+      "credential": {
+        "mode": "oauth"
+      }
+    },
     "claude": {
       "disabled": false,
       "driver": "claude",

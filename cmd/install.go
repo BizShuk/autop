@@ -114,23 +114,7 @@ func renderManagedApp(
 	workDir string,
 	indent string,
 ) string {
-	args := []string{"-c", task.ClientID}
-	if task.TemplateID != "" {
-		args = append(args, "-t", task.TemplateID)
-	}
-	if task.IncludeRuntimeOptions {
-		args = append(
-			args,
-			"--bypass-permission="+strconv.FormatBool(task.BypassPermission),
-			"--model",
-			task.Model,
-			"--effort",
-			task.Effort,
-		)
-	}
-	if prompt := strings.TrimSpace(task.Prompt); prompt != "" {
-		args = append(args, "--", prompt)
-	}
+	args := ecosystemCommandArgs(task)
 	encodedArgs := make([]string, 0, len(args))
 	for _, arg := range args {
 		encodedArgs = append(encodedArgs, strconv.Quote(arg))
@@ -157,6 +141,35 @@ func renderManagedApp(
 		indent+"// autop:end "+taskID,
 	)
 	return strings.Join(lines, "\n")
+}
+
+func autopCommandArgs(task ecosystemTask) []string {
+	args := []string{"-c", task.ClientID}
+	if task.TemplateID != "" {
+		args = append(args, "-t", task.TemplateID)
+	}
+	if task.IncludeRuntimeOptions {
+		args = append(
+			args,
+			"--bypass-permission="+strconv.FormatBool(task.BypassPermission),
+			"--model",
+			task.Model,
+			"--effort",
+			task.Effort,
+		)
+	}
+	if prompt := strings.TrimSpace(task.Prompt); prompt != "" {
+		args = append(args, "--", prompt)
+	}
+	return args
+}
+
+func ecosystemCommandArgs(task ecosystemTask) []string {
+	args := autopCommandArgs(task)
+	if strings.TrimSpace(task.Prompt) != "" {
+		args[len(args)-1] = quoteCommandPart(args[len(args)-1])
+	}
+	return args
 }
 
 func replaceManagedApp(content string, taskName string, replacement string) (string, bool, error) {

@@ -30,13 +30,13 @@ func TestInstallEcosystemCreatesFileFromClientAndTemplate(t *testing.T) {
 	}
 }
 
-func TestInstallEcosystemWritesPromptAsPositionalArgument(t *testing.T) {
+func TestInstallEcosystemShellQuotesPromptAsPositionalArgument(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "ecosystem.config.js")
 
 	if err := installEcosystemTask(path, ecosystemTask{
 		ClientID:              "codex",
 		TemplateID:            "system",
-		Prompt:                "review current workspace",
+		Prompt:                "$find-activity find today's events",
 		BypassPermission:      true,
 		Model:                 "gpt-5.5",
 		Effort:                "high",
@@ -46,7 +46,7 @@ func TestInstallEcosystemWritesPromptAsPositionalArgument(t *testing.T) {
 	}
 
 	got := readTestFile(t, path)
-	want := `args: ["-c", "codex", "-t", "system", "--bypass-permission=true", "--model", "gpt-5.5", "--effort", "high", "--", "review current workspace"]`
+	want := `args: ["-c", "codex", "-t", "system", "--bypass-permission=true", "--model", "gpt-5.5", "--effort", "high", "--", "'$find-activity find today'\"'\"'s events'"]`
 	if !strings.Contains(got, want) {
 		t.Fatalf("ecosystem config missing prompt argument %q:\n%s", want, got)
 	}

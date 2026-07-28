@@ -15,6 +15,7 @@ cmd/
 │   ├── agy.go                # agy argv 與 prompt injection
 │   ├── claude.go             # Claude family argv、settings 與 credential env
 │   ├── codex.go              # Codex argv、effort 與 stdin prompt
+│   ├── grok.go               # Grok argv、cwd 與 argument prompt
 │   └── driver_test.go        # driver mapping tests
 ├── runner.go                 # credential preflight 與 exec.CommandContext
 ├── wizard.go                 # interactive PM2 task wizard
@@ -35,8 +36,8 @@ plans/                        # autop design plans
 
 ## 關鍵決策 (Key Decisions)
 
-- `autop` 只啟動已註冊的本機 `agy`、Claude family 或 `codex` CLI，不直接呼叫 provider
-  API。
+- `autop` 只啟動已註冊的本機 `agy`、Claude family、`codex` 或 `grok` CLI，不直接呼叫
+  provider API。
 - `config.Default(WithAppName("autop"))` 是設定載入唯一入口；runtime config 位於
   `~/.config/autop/`，不依賴 workspace `settings.json`。
 - `gosdk/cmd.ConfigCmd` 直接掛在 root Cobra command。`autop config` 顯示合併設定，
@@ -50,13 +51,22 @@ plans/                        # autop design plans
   `--bypass-permission=true` 才加入 dangerous permission flag。
 - Claude profile 的 `command` 維持本機 executable 對應：`claudem` 啟動 `claudem`、
   `claudew` 啟動 `claudew`；`claudep` 使用 `claude` 搭配 proxy settings。
+- agy 與 Claude family 以 `--add-dir <cwd>` 加入目前 workspace；Codex 只以
+  `-C <cwd>` 設定 primary workspace。Grok 以 `--cwd <cwd>` 設定工作目錄。
 - Prompt template 使用 Go `text/template`。Codex skill 使用 `$` prefix；agy 與 Claude
   skill 使用 `/` prefix。
 - Child 啟動前用 `log/slog` 記錄 shell-safe command；credential environment 不進 log。
+- Wizard 寫入 PM2 task 後依序顯示 shell-safe original `autop` command、driver mapping
+  後的 execute command、root `ecosystem.config.js` 絕對路徑與實際 configuration；輸出
+  不解析或顯示 credential environment。Original/execute command 只對 label 套 ANSI
+  color，command value 保持無色；ecosystem path 與 configuration 同樣只對 label 上色。
 - PM2 task 由 wizard 以 marker 管理、設為 `optional: true`、`autorestart: false`，並以
   atomic rename 更新 `ecosystem.config.js`。
-- 在含有 `cmd/` 的 workspace，wizard 將 PM2 設定寫入本目錄，但 task `cwd` 保持
-  workspace root；一般 workspace fallback 至根目錄 `ecosystem.config.js`。
+- 本機 PM2 會把 `script` 與 `args` 串接後交給 Bash；wizard 因此只對任意內容的 prompt
+  argument 套用 shell-safe 單引號 quoting，包含 `$` preservation 與內部單引號 escape。
+- Wizard 以向上找到的 `cmd/` 目錄辨識 workspace root，並將 PM2 設定寫入該 root 的
+  `ecosystem.config.js`；task `cwd` 同樣保持 workspace root。找不到 `cmd/` 時則以目前
+  working directory 作為 workspace root。
 
 ## Client contract
 
@@ -71,6 +81,7 @@ Provider permission mapping：
 | `agy` | `--dangerously-skip-permissions` |
 | `claude` | `--dangerously-skip-permissions` |
 | `codex` | `--dangerously-bypass-approvals-and-sandbox` |
+| `grok` | `--always-approve --permission-mode auto` |
 
 ## 開發與驗證 (Development & Verification)
 

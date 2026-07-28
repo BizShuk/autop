@@ -199,7 +199,7 @@ func TestWizardCommandWritesSelectedFlags(t *testing.T) {
 		got,
 		`args: ["-c", "agy", "-t", "system", "--bypass-permission=false", `+
 			`"--model", "gemini-3.6-flash-high", "--effort", "high", "--", `+
-			`"review current workspace"]`,
+			`"'review current workspace'"]`,
 	) {
 		t.Fatalf("ecosystem config has wrong args:\n%s", got)
 	}
@@ -227,7 +227,53 @@ func TestWizardCommandWritesSelectedFlags(t *testing.T) {
 	}
 }
 
-func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
+func TestWizardCommandPrintsCommandAndEcosystemSummary(t *testing.T) {
+	workDir := t.TempDir()
+	settings := testSettings()
+	codex := settings.Clients["codex"]
+	codex.Models = []string{"gpt-5.6-sol", "gpt-5.6-luna"}
+	codex.Efforts = []string{"xhigh", "medium"}
+	settings.Clients["codex"] = codex
+	dependencies := commandDependencies{
+		getwd:     func() (string, error) { return workDir, nil },
+		lookupEnv: missingEnv,
+		run:       runProcess,
+		logger:    slog.New(slog.NewTextHandler(io.Discard, nil)),
+	}
+	command := rootCommandForTest(t, settings, dependencies)
+	var wizardOutput bytes.Buffer
+	command.SetIn(strings.NewReader(
+		"codex\n(none)\nyes\ngpt-5.6-luna\nmedium\n$find-activity find 5 event s in EU\n\n",
+	))
+	command.SetOut(&wizardOutput)
+	command.SetErr(io.Discard)
+	command.SetArgs([]string{"wizard"})
+
+	if err := command.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	configPath := filepath.Join(workDir, "ecosystem.config.js")
+	configContent := readTestFile(t, configPath)
+	wantOriginal := "\x1b[36mOriginal command (autop):\x1b[0m\n" +
+		"  autop -c codex --bypass-permission=true --model gpt-5.6-luna" +
+		" --effort medium -- '$find-activity find 5 event s in EU'\n"
+	wantExecute := "\x1b[32mExecute command (codex):\x1b[0m\n" +
+		"  printf '%s' '$find-activity find 5 event s in EU'" +
+		" | codex exec --dangerously-bypass-approvals-and-sandbox" +
+		" --model gpt-5.6-luna -c 'model_reasoning_effort=\"medium\"'" +
+		" -C " + workDir + " -\n"
+	wantPath := "\x1b[35mecosystem.config.js path:\x1b[0m\n  " + configPath + "\n"
+	wantConfiguration := "\x1b[35mecosystem.config.js configuration:\x1b[0m\n" +
+		configContent
+	output := wizardOutput.String()
+	for _, want := range []string{wantOriginal, wantExecute, wantPath, wantConfiguration} {
+		if !strings.Contains(output, want) {
+			t.Fatalf("wizard output is missing summary %q:\n%s", want, output)
+		}
+	}
+}
+
+func TestWizardCommandWritesEcosystemAtWorkspaceRoot(t *testing.T) {
 	workDir := t.TempDir()
 	if err := os.MkdirAll(filepath.Join(workDir, "cmd"), 0o755); err != nil {
 		t.Fatal(err)
@@ -247,7 +293,7 @@ func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 	if err := command.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
-	configPath := filepath.Join(workDir, "cmd", "ecosystem.config.js")
+	configPath := filepath.Join(workDir, "ecosystem.config.js")
 	got := readTestFile(t, configPath)
 	if !strings.Contains(got, "cwd: "+strconv.Quote(workDir)) {
 		t.Fatalf("ecosystem config has wrong workspace cwd:\n%s", got)
@@ -255,8 +301,8 @@ func TestWizardCommandKeepsAutopConfigUnderPackage(t *testing.T) {
 	if !strings.Contains(got, `name: "Autop agy `+filepath.Base(workDir)+`"`) {
 		t.Fatalf("ecosystem config has wrong project task name:\n%s", got)
 	}
-	if _, err := os.Stat(filepath.Join(workDir, "ecosystem.config.js")); !os.IsNotExist(err) {
-		t.Fatalf("wizard unexpectedly wrote a root ecosystem config: %v", err)
+	if _, err := os.Stat(filepath.Join(workDir, "cmd", "ecosystem.config.js")); !os.IsNotExist(err) {
+		t.Fatalf("wizard unexpectedly wrote cmd/ecosystem.config.js: %v", err)
 	}
 }
 

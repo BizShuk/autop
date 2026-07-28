@@ -1,8 +1,8 @@
 # Autop LLM CLI Façade
 
 `autop` 是獨立的 Go CLI，提供單一入口來啟動已設定的本機 LLM CLI。它依
-`-c` 選擇 `agy`、Claude family 或 `codex` client，依 `-t` 套用 prompt template，
-不直接呼叫 provider API。
+`-c` 選擇 `agy`、Claude family、`codex` 或 `grok` client，依 `-t` 套用 prompt
+template，不直接呼叫 provider API。
 
 ## 使用方式
 
@@ -42,7 +42,8 @@ autop config --update clients.codex.model=gpt-5.5
 1. `config.Default(WithAppName("autop"))` 載入
    `~/.config/autop/settings.json` 與 `settings.local.json`。
 2. Driver 將 client profile、model、effort、permission bypass、workspace 與 prompt
-   映射成 `agy`、`claude` 或 `codex exec` 的 arguments。
+   映射成本機 `agy`、`claude`、`codex exec` 或 `grok` 的 arguments；agy、Claude
+   family 帶入 `--add-dir <cwd>`，Codex 帶入 `-C <cwd>`，Grok 帶入 `--cwd <cwd>`。
 3. 使用 Go `text/template` 渲染具名 template；Codex skill 使用 `$` prefix，agy 與
    Claude skill 使用 `/` prefix。
 4. Child 啟動前以 `log/slog` 輸出 shell-safe command，再串流 stdout／stderr 並保留
@@ -60,6 +61,7 @@ user-level config；既有 `settings.json` 預設保留，需明確使用 `--mer
 
 - `agy`
 - `codex`
+- `grok`
 - `claude`
 - `claudem`
 - `claudew`
@@ -90,12 +92,21 @@ credential 與 template 範例見
 | `agy` | `--dangerously-skip-permissions` |
 | Claude family | `--dangerously-skip-permissions` |
 | `codex` | `--dangerously-bypass-approvals-and-sandbox` |
+| `grok` | `--always-approve --permission-mode auto` |
 
 ## PM2 wizard
 
 `autop wizard` 依序詢問 CLI、template、permission bypass、model、effort、task prompt
-與 optional cron schedule。workspace 含有 `cmd/` 時，task 寫入
-`cmd/ecosystem.config.js`；PM2 `cwd` 仍保存 workspace root 的絕對路徑。
+與 optional cron schedule，寫入 PM2 task 後依序顯示 shell-safe `Original command
+(autop)`、driver mapping 後的 `Execute command (<cli>)`、`ecosystem.config.js` 絕對
+路徑及實際寫入的完整 configuration。兩個 command label 以 ANSI color 區分，但 command
+value 保持無色；path 與 configuration label 同樣以 ANSI color 標示，而各自的 value
+保持無色。`$find-activity` 等 Codex skill prompt 會保持 literal，不會在 preview 中被
+shell 展開。Wizard 以 workspace 的 `cmd/` 目錄辨識
+project root，task 統一寫入 project root 的 `ecosystem.config.js`；PM2 `cwd` 同樣保存
+workspace root 的絕對路徑。由於本機 PM2 會透過 Bash 執行 `script` 與 `args`，wizard
+會在 `ecosystem.config.js` 中將完整 prompt 包成 shell-safe 單引號 argument；prompt
+內原有的單引號會一併 escape。
 
 Managed task 具備：
 
@@ -107,11 +118,11 @@ Managed task 具備：
 - `// autop:begin <task>`／`// autop:end <task>` marker
 
 ```bash
-pm2 start cmd/ecosystem.config.js
+pm2 start ecosystem.config.js
 ```
 
-Root [`ecosystem.config.js`](ecosystem.config.js) 只聚合非 autop 的常駐程序，並
-載入本目錄的 PM2 task 定義。
+Wizard 會保留 root `ecosystem.config.js` 中既有 app，並以 managed marker 新增或更新
+Autop task。
 
 ## 開發
 

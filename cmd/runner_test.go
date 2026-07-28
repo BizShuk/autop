@@ -63,12 +63,26 @@ func TestFormatCommandDoesNotIncludeEnvironment(t *testing.T) {
 func TestFormatCommandIncludesStdinPipeline(t *testing.T) {
 	process := autopdriver.Process{
 		Name:  "codex",
-		Args:  []string{"exec", "-"},
-		Stdin: "/find-actiity find 5 activities in EU",
+		Args:  []string{"exec", "-c", `model_reasoning_effort="medium"`, "-"},
+		Stdin: "$find-activity find 5 event s in EU",
 	}
 
 	got := formatCommand(process)
-	want := `printf '%s' "/find-actiity find 5 activities in EU" | codex exec -`
+	want := `printf '%s' '$find-activity find 5 event s in EU' | codex exec -c 'model_reasoning_effort="medium"' -`
+	if got != want {
+		t.Fatalf("formatCommand() = %q, want %q", got, want)
+	}
+}
+
+func TestFormatCommandEscapesSingleQuotes(t *testing.T) {
+	process := autopdriver.Process{
+		Name:  "codex",
+		Args:  []string{"exec", "-"},
+		Stdin: "don't expand $skill",
+	}
+
+	got := formatCommand(process)
+	want := `printf '%s' 'don'"'"'t expand $skill' | codex exec -`
 	if got != want {
 		t.Fatalf("formatCommand() = %q, want %q", got, want)
 	}
