@@ -1,0 +1,29 @@
+{
+  "name": "autop",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Unified CLI facade that launches local agy, Claude family, codex and grok CLIs",
+  "scripts": {
+    "dev": "go run .",
+
+    "test": "npx npm-run-all --parallel test:*",
+    "test:go": "go test ./... -count=1",
+    "test:scripts": "bash scripts/generate-wizard-commands_test.sh",
+
+    "build": "go build -o autop .",
+
+    "deploy": "go install .",
+
+    "lint": "npx npm-run-all --parallel lint:*",
+    "lint:vet": "go vet ./...",
+    "lint:tidy": "go mod tidy -diff",
+
+    "clean": "rm -f autop",
+
+    "ci": "npm run lint && npm run test && npm run build",
+
+    "generate:command-matrix": "go test ./cmd -run CommandMatrix -update-matrix -count=1",
+    "generate:dry-run-matrix": "bash scripts/generate-dry-run-matrix.sh",
+    "generate:wizard-commands": "bash scripts/generate-wizard-commands.sh"
+  }
+}

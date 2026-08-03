@@ -104,7 +104,7 @@
     "claudem": {
       "disabled": false,
       "driver": "claude",
-      "command": "claudem",
+      "command": "claude",
       "auto_approve": true,
       "model": "MiniMax-M3",
       "models": [
@@ -131,7 +131,7 @@
     "claudew": {
       "disabled": false,
       "driver": "claude",
-      "command": "claudew",
+      "command": "claude",
       "auto_approve": true,
       "model": "minimax-m3",
       "models": [
@@ -205,13 +205,13 @@
   },
   "templates": {
     "system": {
-      "content": "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}"
+      "content": "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}"
     },
     "auto-evolving": {
-      "content": "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}"
+      "content": "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}"
     },
     "codex-base": {
-      "file": "~/projects/cc-plugin/pkg/system-prompts/CL4R1T4S/OPENAI/Codex.md"
+      "file": "~/projects/cc-plugin/pkg/prompt/system-prompts/CL4R1T4S/OPENAI/Codex.md"
     }
   }
 }

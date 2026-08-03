@@ -44,18 +44,31 @@ func TestRunProcessLogsCommandBeforeExecution(t *testing.T) {
 	}
 }
 
-func TestFormatCommandDoesNotIncludeEnvironment(t *testing.T) {
+func TestFormatCommandShowsEnvReferenceWithoutSecret(t *testing.T) {
 	process := autopdriver.Process{
-		Name:     "claude",
-		Args:     []string{"--model", "opus"},
-		ExtraEnv: []string{"ANTHROPIC_AUTH_TOKEN=top-secret"},
+		Name:       "claude",
+		Args:       []string{"--model", "opus"},
+		ExtraEnv:   []string{"ANTHROPIC_AUTH_TOKEN=top-secret"},
+		EnvPreview: []string{`ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY"`},
 	}
 
 	got := formatCommand(process)
-	if strings.Contains(got, "top-secret") || strings.Contains(got, "ANTHROPIC_AUTH_TOKEN") {
-		t.Fatalf("formatCommand() leaked environment: %q", got)
+	if strings.Contains(got, "top-secret") {
+		t.Fatalf("formatCommand() leaked credential value: %q", got)
 	}
-	if got != `claude --model opus` {
+	want := `ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY" claude --model opus`
+	if got != want {
+		t.Fatalf("formatCommand() = %q, want %q", got, want)
+	}
+}
+
+func TestFormatCommandOmitsEnvPrefixWithoutCredential(t *testing.T) {
+	process := autopdriver.Process{
+		Name: "claude",
+		Args: []string{"--model", "opus"},
+	}
+
+	if got := formatCommand(process); got != `claude --model opus` {
 		t.Fatalf("formatCommand() = %q", got)
 	}
 }

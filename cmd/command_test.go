@@ -39,6 +39,7 @@ func resetRootCommandForTest() {
 	bypassPermissionFlag = false
 	modelFlag = ""
 	effortFlag = ""
+	dryRunFlag = false
 	RootCmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		flag.Changed = false
 	})
@@ -516,5 +517,75 @@ func TestRootCommandAppliesWizardRuntimeFlags(t *testing.T) {
 	}
 	if len(captured.Args) == 0 || captured.Args[len(captured.Args)-1] != "review workspace" {
 		t.Fatalf("process did not preserve terminated prompt: %#v", captured.Args)
+	}
+}
+
+func TestRootCommandDryRunPrintsCommandWithoutExecuting(t *testing.T) {
+	settings := testSettings()
+	dependencies := commandDependencies{
+		getwd:     func() (string, error) { return "/workspace", nil },
+		lookupEnv: missingEnv,
+		run: func(
+			_ context.Context,
+			_ autopdriver.Process,
+			_ io.Writer,
+			_ io.Writer,
+			_ *slog.Logger,
+		) error {
+			t.Fatal("dry run must not execute the child process")
+			return nil
+		},
+		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+	}
+	command := rootCommandForTest(t, settings, dependencies)
+	var out bytes.Buffer
+	command.SetIn(strings.NewReader(""))
+	command.SetOut(&out)
+	command.SetErr(io.Discard)
+	command.SetArgs([]string{"--dry-run", "-c", "codex", "--", "review workspace"})
+
+	if err := command.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+	got := strings.TrimSpace(out.String())
+	if !strings.HasPrefix(got, "printf '%s' 'review workspace' | codex exec") {
+		t.Fatalf("dry run output = %q, want shell-safe codex command line", got)
+	}
+}
+
+func TestRootCommandDryRunSkipsPreflight(t *testing.T) {
+	settings := testSettings()
+	dependencies := commandDependencies{
+		getwd:     func() (string, error) { return "/workspace", nil },
+		lookupEnv: missingEnv,
+		run: func(
+			_ context.Context,
+			_ autopdriver.Process,
+			_ io.Writer,
+			_ io.Writer,
+			_ *slog.Logger,
+		) error {
+			t.Fatal("dry run must not execute the child process")
+			return nil
+		},
+		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+	}
+	command := rootCommandForTest(t, settings, dependencies)
+	var out bytes.Buffer
+	command.SetIn(strings.NewReader(""))
+	command.SetOut(&out)
+	command.SetErr(io.Discard)
+	command.SetArgs([]string{"--dry-run", "-c", "claudem", "--", "review workspace"})
+
+	if err := command.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v, want dry run to skip credential preflight", err)
+	}
+	got := strings.TrimSpace(out.String())
+	if !strings.HasPrefix(got, `ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY" claude`) {
+		t.Fatalf("dry run output = %q, want credential preview prefix", got)
+	}
+	if strings.Contains(got, "MINIMAX_API_KEY=") &&
+		!strings.Contains(got, `"$MINIMAX_API_KEY"`) {
+		t.Fatalf("dry run output leaked a resolved credential: %q", got)
 	}
 }

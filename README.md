@@ -16,6 +16,9 @@ printf '%s' 'summarize current workspace' | autop
 # 使用 client 與 template
 autop -c codex -t system
 
+# 只印出實際要執行的 command line，不啟動 CLI
+autop --dry-run -c claudem -t system -- review workspace
+
 # 互動建立 PM2 task
 autop wizard
 autop w
@@ -68,17 +71,31 @@ user-level config；既有 `settings.json` 預設保留，需明確使用 `--mer
 - `claudep`
 - `claudet`（預設停用，待 credential contract 完成）
 
-Claude profile 的 `command` 會保留本機 executable 的一對一對應：
+所有 Claude profile 都直接啟動 `claude` executable，profile 差異由 settings 檔與
+credential environment 表示，不再依賴 `~/bin` 下的 wrapper script：
 
-| Profile | Executable | Settings |
-| ------- | ---------- | -------- |
-| `claude` | `claude` | `~/projects/cc-plugin/config/settings.json` |
-| `claudem` | `claudem` | `~/projects/cc-plugin/config/minimax.json` |
-| `claudew` | `claudew` | `~/projects/cc-plugin/config/llmbox.json` |
-| `claudep` | `claude` | `~/projects/cc-plugin/config/proxy.json` |
+| Profile | Executable | Settings | Credential |
+| ------- | ---------- | -------- | ---------- |
+| `claude` | `claude` | `~/projects/cc-plugin/config/settings.json` | OAuth |
+| `claudem` | `claude` | `~/projects/cc-plugin/config/minimax.json` | `MINIMAX_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
+| `claudew` | `claude` | `~/projects/cc-plugin/config/llmbox.json` | `TIKTOK_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
+| `claudep` | `claude` | `~/projects/cc-plugin/config/proxy.json` | `AGENTSDK_PROXY_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
 
-例如 `autop -c claudem --bypass-permission=true -- review workspace` 會啟動
-`claudem` executable，並傳入 MiniMax settings、model 與 prompt。
+例如 `autop -c claudem --bypass-permission=true -- review workspace` 會執行等同於
+`ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY" claude --dangerously-skip-permissions
+--settings ~/projects/cc-plugin/config/minimax.json ...` 的完整命令。每個 client
+與 flag 組合對應的實際 command line 見
+[`docs/command-matrix.md`](docs/command-matrix.md)。
+
+啟動 CLI 前 autop 會先做 preflight：profile 若指定 `settings` 檔而該檔不存在（或指到
+目錄），命令直接失敗並列出完整路徑，不會啟動 child process。不需要 settings 檔的
+profile（`agy`、`codex`、`grok`）則跳過這道檢查。
+
+`--dry-run` 只把解析後的 command line 印到 stdout，不啟動 child process。輸出與
+執行前 log 的內容一致：shell-safe quoting、stdin prompt 以 `printf '%s' ... |` 呈現，
+credential 以 `TARGET="$SOURCE"` 形式顯示而不解析 secret。因為不會執行任何東西，
+dry run 一併跳過 settings 檔與 credential 兩道 preflight，所以尚未設定 API key 或
+settings 檔時仍可預覽命令。
 
 內建 template：`system`、`auto-evolving` 與 `codex-base`。完整 client、model、effort、
 credential 與 template 範例見

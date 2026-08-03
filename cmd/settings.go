@@ -137,7 +137,7 @@ func defaultSettings() Settings {
 			},
 			"claudem": {
 				Driver:          "claude",
-				Command:         "claudem",
+				Command:         "claude",
 				AutoApprove:     true,
 				Model:           "MiniMax-M3",
 				Models:          []string{"MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.5"},
@@ -153,7 +153,7 @@ func defaultSettings() Settings {
 			},
 			"claudew": {
 				Driver:          "claude",
-				Command:         "claudew",
+				Command:         "claude",
 				AutoApprove:     true,
 				Model:           "minimax-m3",
 				Models:          []string{"minimax-m3", "glm-5.2", "minimax-m2.7", "gpt-5.3-codex"},
@@ -202,13 +202,13 @@ func defaultSettings() Settings {
 		},
 		Templates: map[string]PromptTemplate{
 			"system": {
-				Content: "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}",
+				Content: "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}",
 			},
 			"auto-evolving": {
-				Content: "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}",
+				Content: "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}",
 			},
 			"codex-base": {
-				File: "~/projects/cc-plugin/pkg/system-prompts/CL4R1T4S/OPENAI/Codex.md",
+				File: "~/projects/cc-plugin/pkg/prompt/system-prompts/CL4R1T4S/OPENAI/Codex.md",
 			},
 		},
 	}

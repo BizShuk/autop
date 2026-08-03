@@ -1,7 +1,14 @@
 // Package driver maps Autop client profiles to executable process invocations.
 package driver
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"os"
+	"strings"
+
+	gosdkconfig "github.com/bizshuk/gosdk/config"
+)
 
 // ClientConfig describes one selectable local LLM CLI profile.
 type ClientConfig struct {
@@ -31,6 +38,11 @@ type Process struct {
 	Args     []string
 	Stdin    string
 	ExtraEnv []string
+	// EnvPreview is the shell-safe environment prefix used when the command is
+	// displayed or logged. It references the source variable instead of the
+	// resolved secret, so a rendered command line stays copy-pasteable without
+	// ever exposing a credential value.
+	EnvPreview []string
 }
 
 // LookupEnv reads one environment variable without exposing the whole environment.
@@ -44,6 +56,9 @@ func Prepare(
 	workDir string,
 	lookupEnv LookupEnv,
 ) (Process, error) {
+	if err := checkSettingsFile(clientID, client.Settings); err != nil {
+		return Process{}, err
+	}
 	extraEnv, err := prepareCredentialEnv(clientID, client.Credential, lookupEnv)
 	if err != nil {
 		return Process{}, err
@@ -81,7 +96,38 @@ func BuildProcess(
 			client.Driver,
 		)
 	}
+	process.EnvPreview = credentialEnvPreview(client.Credential)
 	return process, nil
+}
+
+// checkSettingsFile fails before execution when a profile names a settings file
+// that is not readable. Profiles whose driver takes no settings file leave the
+// field empty and are skipped.
+func checkSettingsFile(clientID string, settings string) error {
+	if strings.TrimSpace(settings) == "" {
+		return nil
+	}
+	path := gosdkconfig.ExpandHome(settings)
+	info, err := os.Stat(path)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("client %q settings file %s does not exist", clientID, path)
+		}
+		return fmt.Errorf("client %q settings file %s: %w", clientID, path, err)
+	}
+	if info.IsDir() {
+		return fmt.Errorf("client %q settings path %s is a directory", clientID, path)
+	}
+	return nil
+}
+
+func credentialEnvPreview(credential CredentialConfig) []string {
+	if credential.Mode == "oauth" ||
+		credential.SourceEnv == "" ||
+		credential.TargetEnv == "" {
+		return nil
+	}
+	return []string{credential.TargetEnv + `="$` + credential.SourceEnv + `"`}
 }
 
 func prepareCredentialEnv(

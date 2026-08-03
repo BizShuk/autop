@@ -33,14 +33,19 @@ Go 原始碼（那是一般 Go 開發，走 golang-dev）。
 | 套 template                 | `autop -c codex -t system`                            |
 | 覆寫 model／effort          | `autop -c codex --model gpt-5.5 --effort high -- 'x'` |
 | 允許危險權限                | `autop -c codex --bypass-permission=true -- 'x'`      |
+| 只印命令不執行              | `autop --dry-run -c codex -t system`                  |
 | 建 PM2 task                 | `autop wizard`（alias `autop w`）                     |
 | 看合併設定                  | `autop config` / `autop config --source`              |
 | 寫入預設設定檔              | `autop config default`（升級後補欄位用 `--merge`）    |
 | 改單一設定值                | `autop config --update clients.codex.model=gpt-5.5`   |
 
-Root flags 只有六個：`-c/--client`、`-t/--template`、`--model`、`--effort`、
-`--bypass-permission`、`-h`。沒有 `-p`、沒有 `--cwd`；workspace 一律是目前 working
-directory。
+Root flags 只有七個：`-c/--client`、`-t/--template`、`--model`、`--effort`、
+`--bypass-permission`、`--dry-run`、`-h`。沒有 `-p`、沒有 `--cwd`；workspace 一律是
+目前 working directory。
+
+`--dry-run` 把解析後的 command line 印到 stdout 就結束：不啟動 CLI，也不做 settings
+檔與 credential 檢查，所以 API key 還沒設定時照樣能預覽。Credential 以
+`TARGET="$SOURCE"` 顯示，永遠不會印出 secret 值。
 
 ## Prompt 輸入規則
 
@@ -57,14 +62,18 @@ directory。
 | `codex`   | codex  | `codex exec`              | OAuth                                             |
 | `grok`    | grok   | `grok`                    | OAuth                                             |
 | `claude`  | claude | `claude`                  | OAuth                                             |
-| `claudem` | claude | `claudem`                 | `MINIMAX_API_KEY` → `ANTHROPIC_AUTH_TOKEN`        |
-| `claudew` | claude | `claudew`                 | `TIKTOK_API_KEY` → `ANTHROPIC_AUTH_TOKEN`         |
+| `claudem` | claude | `claude` + minimax settings | `MINIMAX_API_KEY` → `ANTHROPIC_AUTH_TOKEN`      |
+| `claudew` | claude | `claude` + llmbox settings | `TIKTOK_API_KEY` → `ANTHROPIC_AUTH_TOKEN`        |
 | `claudep` | claude | `claude` + proxy settings | `AGENTSDK_PROXY_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
 | `claudet` | claude | —                         | `disabled: true`，選了會報錯                      |
 
 Workspace 傳遞方式各 driver 不同：agy 與 Claude family 用 `--add-dir <cwd>`，
 Codex 用 `-C <cwd>`，Grok 用 `--cwd <cwd>`。Model／effort 只接受該 profile
 `models`／`efforts` 清單內的值，否則 `client "x" does not support model "y"`。
+
+Claude family profile 的 `settings` 檔在啟動前會被檢查；檔案不存在時直接報
+`client "x" settings file <path> does not exist` 並中止，不會啟動 CLI。`agy`、
+`codex`、`grok` 不需要 settings 檔，跳過這道檢查。
 
 ## Permission bypass（最常見的誤解）
 

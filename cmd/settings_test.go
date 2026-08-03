@@ -166,7 +166,7 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 		},
 		"claudem": {
 			driver:  "claude",
-			command: "claudem",
+			command: "claude",
 			model:   "MiniMax-M3",
 			effort:  "xhigh",
 			credential: CredentialConfig{
@@ -177,7 +177,7 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 		},
 		"claudew": {
 			driver:  "claude",
-			command: "claudew",
+			command: "claude",
 			model:   "minimax-m3",
 			effort:  "xhigh",
 			credential: CredentialConfig{
@@ -361,7 +361,7 @@ func testSettings() Settings {
 			},
 			"claudem": {
 				Driver:          "claude",
-				Command:         "claudem",
+				Command:         "claude",
 				AutoApprove:     true,
 				Model:           "MiniMax-M3",
 				Effort:          "xhigh",
@@ -382,7 +382,7 @@ func testSettings() Settings {
 		},
 		Templates: map[string]PromptTemplate{
 			"system": {
-				Content: "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}}\n\n{{.Prompt}}{{end}}",
+				Content: "run {{if eq .Driver \"codex\"}}$system-planner{{else}}/system-planner{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}",
 			},
 		},
 	}

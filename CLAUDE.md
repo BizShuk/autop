@@ -20,7 +20,12 @@ cmd/
 ├── runner.go                 # credential preflight 與 exec.CommandContext
 ├── wizard.go                 # interactive PM2 task wizard
 ├── install.go                # managed ecosystem.config.js atomic update
+├── matrix_test.go            # client × flag → command line golden matrix
 └── *_test.go                 # command、settings、template、runner、wizard tests
+scripts/
+├── generate-wizard-commands.sh    # 對每個 client 跑一次非互動 wizard
+└── generate-dry-run-matrix.sh     # -c × -t × --model × --bypass-permission dry run
+docs/command-matrix.md        # generated client × flag → command line matrix
 docs/terminology.md           # autop terminology single source
 plans/                        # autop design plans
 ```
@@ -49,8 +54,18 @@ plans/                        # autop design plans
   bound values 與 `pflag.Flag.Changed`。
 - Profile 的 `auto_approve` 只提供 wizard 預設值。直接執行必須明確提供
   `--bypass-permission=true` 才加入 dangerous permission flag。
-- Claude profile 的 `command` 維持本機 executable 對應：`claudem` 啟動 `claudem`、
-  `claudew` 啟動 `claudew`；`claudep` 使用 `claude` 搭配 proxy settings。
+- 所有 Claude profile 的 `command` 一律是 `claude`。Profile 差異由 `settings` 檔與
+  `credential` environment mapping 表示，不依賴 `~/bin` 下的 wrapper script
+  （`claudem`／`claudew`），因此 autop 只需 `claude` 在 PATH 上即可執行全部 profile。
+- `Process.EnvPreview` 是 command 顯示與 log 用的 environment prefix，形式為
+  `TARGET="$SOURCE"`；`Process.ExtraEnv` 才帶已解析的 secret，且永不進 log。
+- `--dry-run` 走 `driver.BuildProcess` 而非 `driver.Prepare`，把 `formatCommand` 結果
+  印到 command stdout 後直接返回：不執行 child、不解析 credential，因此也跳過兩道
+  preflight。命令矩陣 golden test 不含此 flag，因為它不改變 driver mapping。
+- `driver.Prepare` 在啟動 child 前做兩道 preflight：settings 檔存在性與 credential
+  environment。`settings` 為空（agy、codex、grok）時直接跳過檔案檢查。
+  `driver.BuildProcess` 不做任何 preflight，wizard 因此能在 settings 檔尚未就緒時
+  仍寫出 PM2 task 與 summary。
 - agy 與 Claude family 以 `--add-dir <cwd>` 加入目前 workspace；Codex 只以
   `-C <cwd>` 設定 primary workspace。Grok 以 `--cwd <cwd>` 設定工作目錄。
 - Prompt template 使用 Go `text/template`。Codex skill 使用 `$` prefix；agy 與 Claude
@@ -91,6 +106,20 @@ Provider permission mapping：
 go test ./cmd/... -count=1
 go vet ./...
 go build .
+```
+
+`scripts/generate-dry-run-matrix.sh` 對`目前 merged config`（不是 embedded default）
+展開 `-c` × `-t` × `--model` × `--bypass-permission` 全組合，逐筆印出 original autop
+command 與 `--dry-run` 映射後的 command line。Client、template 與 model 清單由
+`autop config` 解析而來，可用 `AUTOP_MATRIX_CLIENTS`、`AUTOP_MATRIX_TEMPLATES`、
+`AUTOP_MATRIX_MODELS`、`AUTOP_MATRIX_BYPASS`、`AUTOP_MATRIX_PROMPT` 縮小範圍。失敗組合
+照樣印出並計入結尾統計，script 以 exit 1 結束。與 `docs/command-matrix.md` 的差別是
+後者由 golden test 對 embedded default 產生、且不含 model 全展開。
+
+`docs/command-matrix.md` 由 golden test 產生，driver argv 有變動時重新產生：
+
+```bash
+go test ./cmd -run CommandMatrix -update-matrix -count=1
 ```
 
 完整 repository 驗證：

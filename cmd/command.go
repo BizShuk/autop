@@ -41,6 +41,7 @@ var (
 	bypassPermissionFlag bool
 	modelFlag            string
 	effortFlag           string
+	dryRunFlag           bool
 )
 
 func defaultCommandDependencies() commandDependencies {
@@ -89,6 +90,12 @@ func init() {
 	)
 	flags.StringVar(&modelFlag, "model", "", "override the configured client model")
 	flags.StringVar(&effortFlag, "effort", "", "override the configured client effort")
+	flags.BoolVar(
+		&dryRunFlag,
+		"dry-run",
+		false,
+		"print the resolved command line instead of executing it",
+	)
 
 	RootCmd.AddCommand(WizardCmd, gosdkcmd.ConfigCmd)
 }
@@ -134,6 +141,19 @@ func runRootCommand(command *cobra.Command, args []string) error {
 	)
 	if err != nil {
 		return err
+	}
+	// Dry run only renders the command line, so it deliberately skips
+	// Prepare's settings-file and credential preflight and never resolves a
+	// secret. The printed environment prefix references the source variable.
+	if dryRunFlag {
+		process, err := autopdriver.BuildProcess(clientID, client, prompt, workDir)
+		if err != nil {
+			return err
+		}
+		if _, err := fmt.Fprintln(command.OutOrStdout(), formatCommand(process)); err != nil {
+			return fmt.Errorf("write dry run command: %w", err)
+		}
+		return nil
 	}
 	process, err := autopdriver.Prepare(
 		clientID,

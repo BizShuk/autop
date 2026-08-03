@@ -39,7 +39,8 @@ func runProcess(
 }
 
 func formatCommand(process autopdriver.Process) string {
-	parts := make([]string, 0, len(process.Args)+1)
+	parts := make([]string, 0, len(process.EnvPreview)+len(process.Args)+1)
+	parts = append(parts, process.EnvPreview...)
 	parts = append(parts, quoteCommandPart(process.Name))
 	for _, arg := range process.Args {
 		parts = append(parts, quoteCommandPart(arg))

@@ -1,10 +1,22 @@
 package driver
 
 import (
+	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 )
+
+func writeSettingsFile(t *testing.T) string {
+	t.Helper()
+
+	path := filepath.Join(t.TempDir(), "minimax.json")
+	if err := os.WriteFile(path, []byte("{}"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
+}
 
 func TestPrepareAgyProcess(t *testing.T) {
 	client := ClientConfig{
@@ -38,13 +50,14 @@ func TestPrepareAgyProcess(t *testing.T) {
 }
 
 func TestPrepareClaudeProfileProcess(t *testing.T) {
+	settingsPath := writeSettingsFile(t)
 	client := ClientConfig{
 		Driver:      "claude",
-		Command:     "claudem",
+		Command:     "claude",
 		AutoApprove: true,
 		Model:       "MiniMax-M3",
 		Effort:      "xhigh",
-		Settings:    "/tmp/minimax.json",
+		Settings:    settingsPath,
 		Credential: CredentialConfig{
 			Mode:      "env",
 			SourceEnv: "MINIMAX_API_KEY",
@@ -65,7 +78,7 @@ func TestPrepareClaudeProfileProcess(t *testing.T) {
 	wantArgs := []string{
 		"--dangerously-skip-permissions",
 		"--settings",
-		"/tmp/minimax.json",
+		settingsPath,
 		"--model",
 		"MiniMax-M3",
 		"--effort",
@@ -77,18 +90,40 @@ func TestPrepareClaudeProfileProcess(t *testing.T) {
 		"-p",
 		"review repo",
 	}
-	if got.Name != "claudem" || !reflect.DeepEqual(got.Args, wantArgs) {
-		t.Fatalf("process = %#v, want name claudem args %#v", got, wantArgs)
+	if got.Name != "claude" || !reflect.DeepEqual(got.Args, wantArgs) {
+		t.Fatalf("process = %#v, want name claude args %#v", got, wantArgs)
 	}
 	if !reflect.DeepEqual(got.ExtraEnv, []string{"ANTHROPIC_AUTH_TOKEN=top-secret"}) {
 		t.Fatalf("ExtraEnv = %#v", got.ExtraEnv)
+	}
+	wantPreview := []string{`ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY"`}
+	if !reflect.DeepEqual(got.EnvPreview, wantPreview) {
+		t.Fatalf("EnvPreview = %#v, want %#v", got.EnvPreview, wantPreview)
+	}
+}
+
+func TestBuildProcessOmitsEnvPreviewForOAuthCredential(t *testing.T) {
+	client := ClientConfig{
+		Driver:     "codex",
+		Command:    "codex",
+		Model:      "gpt-5.6-sol",
+		Effort:     "xhigh",
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	got, err := BuildProcess("codex", client, "review repo", "/workspace")
+	if err != nil {
+		t.Fatalf("BuildProcess() error = %v", err)
+	}
+	if len(got.EnvPreview) != 0 {
+		t.Fatalf("process.EnvPreview = %#v, want none for oauth", got.EnvPreview)
 	}
 }
 
 func TestBuildProcessDoesNotResolveCredentialEnvironment(t *testing.T) {
 	client := ClientConfig{
 		Driver:      "claude",
-		Command:     "claudem",
+		Command:     "claude",
 		AutoApprove: true,
 		Model:       "MiniMax-M3",
 		Effort:      "xhigh",
@@ -104,11 +139,15 @@ func TestBuildProcessDoesNotResolveCredentialEnvironment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("BuildProcess() error = %v", err)
 	}
-	if got.Name != "claudem" {
-		t.Fatalf("process.Name = %q, want claudem", got.Name)
+	if got.Name != "claude" {
+		t.Fatalf("process.Name = %q, want claude", got.Name)
 	}
 	if len(got.ExtraEnv) != 0 {
 		t.Fatalf("process.ExtraEnv = %#v, want no resolved credentials", got.ExtraEnv)
+	}
+	wantPreview := []string{`ANTHROPIC_AUTH_TOKEN="$MINIMAX_API_KEY"`}
+	if !reflect.DeepEqual(got.EnvPreview, wantPreview) {
+		t.Fatalf("process.EnvPreview = %#v, want %#v", got.EnvPreview, wantPreview)
 	}
 }
 
@@ -218,6 +257,71 @@ func TestPrepareRejectsMissingCredentialWithoutLeakingSecret(t *testing.T) {
 	}
 	if strings.Contains(err.Error(), "top-secret") {
 		t.Fatalf("error leaked credential: %q", err)
+	}
+}
+
+func TestPrepareRejectsMissingSettingsFile(t *testing.T) {
+	missingPath := filepath.Join(t.TempDir(), "absent.json")
+	client := ClientConfig{
+		Driver:     "claude",
+		Command:    "claude",
+		Model:      "opus",
+		Effort:     "max",
+		Settings:   missingPath,
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	_, err := Prepare("claude", client, "review", "/workspace", missingEnv)
+	if err == nil {
+		t.Fatal("Prepare() error = nil, want missing settings file error")
+	}
+	if !strings.Contains(err.Error(), missingPath) {
+		t.Fatalf("error = %q, want settings path", err)
+	}
+}
+
+func TestPrepareRejectsSettingsDirectory(t *testing.T) {
+	client := ClientConfig{
+		Driver:     "claude",
+		Command:    "claude",
+		Model:      "opus",
+		Effort:     "max",
+		Settings:   t.TempDir(),
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	_, err := Prepare("claude", client, "review", "/workspace", missingEnv)
+	if err == nil || !strings.Contains(err.Error(), "is a directory") {
+		t.Fatalf("Prepare() error = %v, want directory rejection", err)
+	}
+}
+
+func TestPrepareSkipsSettingsCheckWhenNotRequired(t *testing.T) {
+	client := ClientConfig{
+		Driver:     "codex",
+		Command:    "codex",
+		Model:      "gpt-5.6-sol",
+		Effort:     "xhigh",
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	if _, err := Prepare("codex", client, "review", "/workspace", missingEnv); err != nil {
+		t.Fatalf("Prepare() error = %v, want no settings check", err)
+	}
+}
+
+func TestBuildProcessSkipsSettingsFileCheck(t *testing.T) {
+	client := ClientConfig{
+		Driver:     "claude",
+		Command:    "claude",
+		Model:      "opus",
+		Effort:     "max",
+		Settings:   filepath.Join(t.TempDir(), "absent.json"),
+		Credential: CredentialConfig{Mode: "oauth"},
+	}
+
+	if _, err := BuildProcess("claude", client, "review", "/workspace"); err != nil {
+		t.Fatalf("BuildProcess() error = %v, want no preflight", err)
 	}
 }
 
