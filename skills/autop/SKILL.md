@@ -90,7 +90,8 @@ Claude family profile 的 `settings` 檔在啟動前會被檢查；檔案不存�
 
 ## Template
 
-內建 `system`、`auto-evolving`（inline content）與 `codex-base`（file-backed）。
+內建 `system` 與 `auto-evolving`，兩者都是 inline content。設定另外支援 `file`
+（讀外部檔案當 template source），只是預設沒有任何 file-backed template。
 Template 是 Go `text/template`，可用的欄位只有 `.Prompt`、`.WorkDir`、`.Client`、
 `.Driver`；`missingkey=error`，寫錯欄位會直接失敗。Skill prefix 由 template 自行分支
 （`{{if eq .Driver "codex"}}$skill{{else}}/skill{{end}}`）。此外 Codex driver 會把

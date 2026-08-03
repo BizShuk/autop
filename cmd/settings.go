@@ -207,9 +207,6 @@ func defaultSettings() Settings {
 			"auto-evolving": {
 				Content: "run {{if eq .Driver \"codex\"}}$auto-evolving{{else}}/auto-evolving{{end}} for current workspace{{if .Prompt}} {{.Prompt}}{{end}}",
 			},
-			"codex-base": {
-				File: "~/projects/cc-plugin/pkg/prompt/system-prompts/CL4R1T4S/OPENAI/Codex.md",
-			},
 		},
 	}
 }

@@ -97,7 +97,8 @@ credential 以 `TARGET="$SOURCE"` 形式顯示而不解析 secret。因為不會
 dry run 一併跳過 settings 檔與 credential 兩道 preflight，所以尚未設定 API key 或
 settings 檔時仍可預覽命令。
 
-內建 template：`system`、`auto-evolving` 與 `codex-base`。完整 client、model、effort、
+內建 template：`system` 與 `auto-evolving`，兩者都以 inline `content` 定義；
+template 另可用 `file` 指向外部檔案，預設不含這類 template。完整 client、model、effort、
 credential 與 template 範例見
 [`cmd/settings.example.json`](cmd/settings.example.json)。
 
