@@ -56,16 +56,16 @@ Root flags 只有七個：`-c/--client`、`-t/--template`、`--model`、`--effor
 
 ## Client 與 driver mapping
 
-| Client    | Driver | Executable                | Credential                                        |
-| --------- | ------ | ------------------------- | ------------------------------------------------- |
-| `agy`     | agy    | `agy`                     | OAuth                                             |
-| `codex`   | codex  | `codex exec`              | OAuth                                             |
-| `grok`    | grok   | `grok`                    | OAuth                                             |
-| `claude`  | claude | `claude`                  | OAuth                                             |
-| `claudem` | claude | `claude` + minimax settings | `MINIMAX_API_KEY` → `ANTHROPIC_AUTH_TOKEN`      |
-| `claudew` | claude | `claude` + llmbox settings | `TIKTOK_API_KEY` → `ANTHROPIC_AUTH_TOKEN`        |
-| `claudep` | claude | `claude` + proxy settings | `AGENTSDK_PROXY_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
-| `claudet` | claude | —                         | `disabled: true`，選了會報錯                      |
+| Client    | Driver | Executable                  | Credential                                        |
+| --------- | ------ | --------------------------- | ------------------------------------------------- |
+| `agy`     | agy    | `agy`                       | OAuth                                             |
+| `codex`   | codex  | `codex exec`                | OAuth                                             |
+| `grok`    | grok   | `grok`                      | OAuth                                             |
+| `claude`  | claude | `claude`                    | OAuth                                             |
+| `claudem` | claude | `claude` + minimax settings | `MINIMAX_API_KEY` → `ANTHROPIC_AUTH_TOKEN`        |
+| `claudew` | claude | `claude` + llmbox settings  | `TIKTOK_API_KEY` → `ANTHROPIC_AUTH_TOKEN`         |
+| `claudep` | claude | `claude` + proxy settings   | `AGENTSDK_PROXY_API_KEY` → `ANTHROPIC_AUTH_TOKEN` |
+| `claudet` | claude | —                           | `disabled: true`，選了會報錯                      |
 
 Workspace 傳遞方式各 driver 不同：agy 與 Claude family 用 `--add-dir <cwd>`，
 Codex 用 `-C <cwd>`，Grok 用 `--cwd <cwd>`。Model／effort 只接受該 profile
