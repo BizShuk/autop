@@ -4,7 +4,7 @@
 
 - [ ] [P0] PM2 task 的 credential environment 來源
       Claude family profile 需要 `MINIMAX_API_KEY`／`TIKTOK_API_KEY`／
-      `AGENTSDK_PROXY_API_KEY`，目前只由 `~/.bash_local` 在 interactive shell 載入。
+      `PROXY_API_KEY`，目前只由 `~/.bash_local` 在 interactive shell 載入。
       PM2 daemon 為 non-interactive，wizard 寫出的 task 會在 credential preflight
       失敗（`client "claudem" requires environment variable MINIMAX_API_KEY`）。
       需決定來源：pm2 `env` 欄位、`~/.config/autop/` 下的 env 檔，或 daemon 啟動前
