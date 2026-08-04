@@ -2,28 +2,21 @@
   "name": "autop",
   "version": "0.0.0",
   "private": true,
-  "description": "Unified CLI facade that launches local agy, Claude family, codex and grok CLIs",
+  "description": "統一 CLI facade：以單一入口啟動本機 agy / Claude 家族 / codex / grok CLI，支援 prompt template 與 pm2 wizard",
   "scripts": {
     "dev": "go run .",
-
     "test": "npx npm-run-all --parallel test:*",
     "test:go": "go test ./... -count=1",
     "test:scripts": "bash scripts/generate-wizard-commands_test.sh",
-
-    "build": "go build -o autop .",
-
+    "build": "go build -o bin/autop .",
     "deploy": "go install .",
-
     "lint": "npx npm-run-all --parallel lint:*",
-    "lint:vet": "go vet ./...",
+    "lint:go": "gofmt -l . && go vet ./...",
     "lint:tidy": "go mod tidy -diff",
-
-    "clean": "rm -f autop",
-
+    "clean": "rm -rf bin",
     "ci": "npm run lint && npm run test && npm run build",
-
-    "generate:command-matrix": "go test ./cmd -run CommandMatrix -update-matrix -count=1",
-    "generate:dry-run-matrix": "bash scripts/generate-dry-run-matrix.sh",
-    "generate:wizard-commands": "bash scripts/generate-wizard-commands.sh"
+    "run:command-matrix": "go test ./cmd -run CommandMatrix -update-matrix -count=1",
+    "run:dry-run-matrix": "bash scripts/generate-dry-run-matrix.sh",
+    "run:wizard-commands": "bash scripts/generate-wizard-commands.sh"
   }
 }
