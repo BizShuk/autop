@@ -46,7 +46,8 @@ autop config --update clients.codex.model=gpt-5.5
    `~/.config/autop/settings.json` 與 `settings.local.json`。
 2. Driver 將 client profile、model、effort、permission bypass、workspace 與 prompt
    映射成本機 `agy`、`claude`、`codex exec` 或 `grok` 的 arguments；agy、Claude
-   family 帶入 `--add-dir <cwd>`，Codex 帶入 `-C <cwd>`，Grok 帶入 `--cwd <cwd>`。
+   family 帶入 `--add-dir <cwd>`，Codex 帶入 `-C <cwd>`，Grok 帶入 `--cwd <cwd>`
+   並固定 single-turn response 為 plain output。
 3. 使用 Go `text/template` 渲染具名 template；Codex skill 使用 `$` prefix，agy 與
    Claude skill 使用 `/` prefix。
 4. Child 啟動前以 `log/slog` 輸出 shell-safe command，再串流 stdout／stderr 並保留

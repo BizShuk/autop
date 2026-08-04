@@ -1,18 +1,15 @@
 package autop
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	autopdriver "github.com/bizshuk/autop/cmd/driver"
-	gosdkconfig "github.com/bizshuk/gosdk/config"
 )
 
 // updateCommandMatrix regenerates the checked-in command matrix instead of
@@ -72,11 +69,10 @@ var matrixCases = []matrixCase{
 }
 
 // TestCommandMatrix renders every client x flag combination through the real
-// root command and asserts the executed command line matches the checked-in
+// root command and asserts the resolved command line matches the checked-in
 // docs/command-matrix.md.
 func TestCommandMatrix(t *testing.T) {
 	settings := defaultSettings()
-	requireSettingsFiles(t, settings)
 	generated := renderCommandMatrix(t, settings)
 
 	if *updateCommandMatrix {
@@ -100,22 +96,6 @@ func TestCommandMatrix(t *testing.T) {
 			matrixDocPath,
 			generated,
 		)
-	}
-}
-
-// requireSettingsFiles skips the matrix on a machine that does not carry the
-// referenced provider settings files, because the run path preflights them.
-func requireSettingsFiles(t *testing.T, settings Settings) {
-	t.Helper()
-
-	for _, clientID := range enabledClientIDs(settings) {
-		path := settings.Clients[clientID].Settings
-		if strings.TrimSpace(path) == "" {
-			continue
-		}
-		if _, err := os.Stat(gosdkconfig.ExpandHome(path)); err != nil {
-			t.Skipf("client %q settings file is unavailable here: %v", clientID, err)
-		}
 	}
 }
 
@@ -167,36 +147,24 @@ func runMatrixCase(
 
 	autopArgs = append([]string{"-c", clientID}, expandMatrixArgs(testCase.args, client)...)
 
-	var captured autopdriver.Process
+	var output strings.Builder
 	dependencies := commandDependencies{
-		getwd:     func() (string, error) { return matrixWorkDir, nil },
-		lookupEnv: func(string) (string, bool) { return "redacted", true },
-		run: func(
-			_ context.Context,
-			process autopdriver.Process,
-			_ io.Writer,
-			_ io.Writer,
-			_ *slog.Logger,
-		) error {
-			captured = process
-			return nil
-		},
-		logger: slog.New(slog.NewTextHandler(io.Discard, nil)),
+		getwd: func() (string, error) { return matrixWorkDir, nil },
 	}
 
 	resetRootCommandForTest()
 	configureCommandRuntime(settings, dependencies)
 	RootCmd.SetIn(strings.NewReader(testCase.stdin))
-	RootCmd.SetOut(io.Discard)
+	RootCmd.SetOut(&output)
 	RootCmd.SetErr(io.Discard)
-	RootCmd.SetArgs(autopArgs)
+	RootCmd.SetArgs(append([]string{"--dry-run"}, autopArgs...))
 	if err := RootCmd.Execute(); err != nil {
 		t.Fatalf("client %q case %q: %v", clientID, testCase.title, err)
 	}
 	resetRootCommandForTest()
 	configureCommandRuntime(defaultSettings(), defaultCommandDependencies())
 
-	return autopArgs, collapseHomePath(t, formatCommand(captured))
+	return autopArgs, collapseHomePath(t, strings.TrimSuffix(output.String(), "\n"))
 }
 
 // collapseHomePath keeps the checked-in matrix machine independent: settings

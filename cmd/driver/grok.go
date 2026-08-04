@@ -1,7 +1,7 @@
 package driver
 
 func prepareGrokProcess(client ClientConfig, prompt string, workDir string) Process {
-	args := make([]string, 0, 10)
+	args := make([]string, 0, 13)
 	if client.AutoApprove {
 		args = append(args, "--always-approve", "--permission-mode", "auto")
 	}
@@ -13,6 +13,8 @@ func prepareGrokProcess(client ClientConfig, prompt string, workDir string) Proc
 		client.Effort,
 		"--cwd",
 		workDir,
+		"--output-format",
+		"plain",
 		"--single",
 		prompt,
 	)

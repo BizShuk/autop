@@ -519,7 +519,7 @@ autop -c grok -- 'summarize current repository'
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'summarize current repository'
+grok --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'summarize current repository'
 ```
 
 ### --bypass-permission=true
@@ -529,7 +529,7 @@ autop -c grok --bypass-permission=true -- 'summarize current repository'
 ```
 
 ```sh
-grok --always-approve --permission-mode auto --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'summarize current repository'
+grok --always-approve --permission-mode auto --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'summarize current repository'
 ```
 
 ### --model 覆寫
@@ -539,7 +539,7 @@ autop -c grok --model grok-4.5 -- 'summarize current repository'
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'summarize current repository'
+grok --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'summarize current repository'
 ```
 
 ### --effort 覆寫
@@ -549,7 +549,7 @@ autop -c grok --effort low -- 'summarize current repository'
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort low --cwd /workspace --single 'summarize current repository'
+grok --model grok-4.5 --reasoning-effort low --cwd /workspace --output-format plain --single 'summarize current repository'
 ```
 
 ### -t system (template 無 prompt)
@@ -559,7 +559,7 @@ autop -c grok -t system
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'run /system-planner for current workspace'
+grok --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'run /system-planner for current workspace'
 ```
 
 ### -t system + prompt
@@ -569,7 +569,7 @@ autop -c grok -t system -- 'focus on dependency boundaries'
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'run /system-planner for current workspace focus on dependency boundaries'
+grok --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'run /system-planner for current workspace focus on dependency boundaries'
 ```
 
 ### 全 flag 組合
@@ -579,7 +579,7 @@ autop -c grok -t auto-evolving --bypass-permission=true --model grok-4.5 --effor
 ```
 
 ```sh
-grok --always-approve --permission-mode auto --model grok-4.5 --reasoning-effort low --cwd /workspace --single 'run /auto-evolving for current workspace focus on dependency boundaries'
+grok --always-approve --permission-mode auto --model grok-4.5 --reasoning-effort low --cwd /workspace --output-format plain --single 'run /auto-evolving for current workspace focus on dependency boundaries'
 ```
 
 ### prompt 由 stdin 傳入
@@ -589,5 +589,5 @@ autop -c grok
 ```
 
 ```sh
-grok --model grok-4.5 --reasoning-effort high --cwd /workspace --single 'review the staged diff'
+grok --model grok-4.5 --reasoning-effort high --cwd /workspace --output-format plain --single 'review the staged diff'
 ```

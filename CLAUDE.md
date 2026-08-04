@@ -67,7 +67,8 @@ plans/                        # autop design plans
   `driver.BuildProcess` 不做任何 preflight，wizard 因此能在 settings 檔尚未就緒時
   仍寫出 PM2 task 與 summary。
 - agy 與 Claude family 以 `--add-dir <cwd>` 加入目前 workspace；Codex 只以
-  `-C <cwd>` 設定 primary workspace。Grok 以 `--cwd <cwd>` 設定工作目錄。
+  `-C <cwd>` 設定 primary workspace。Grok 以 `--cwd <cwd>` 設定工作目錄，並固定
+  single-turn response 為 plain output。
 - Prompt template 使用 Go `text/template`。Codex skill 使用 `$` prefix；agy 與 Claude
   skill 使用 `/` prefix。
 - Child 啟動前用 `log/slog` 記錄 shell-safe command；credential environment 不進 log。

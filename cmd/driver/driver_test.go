@@ -226,6 +226,8 @@ func TestPrepareGrokProcess(t *testing.T) {
 		"high",
 		"--cwd",
 		"/workspace",
+		"--output-format",
+		"plain",
 		"--single",
 		"review workspace",
 	}
