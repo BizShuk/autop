@@ -281,13 +281,6 @@ func validateClient(id string, client ClientConfig) error {
 		return err
 	}
 	if client.Driver == "agy" {
-		allowedModels := client.Models
-		if len(allowedModels) == 0 {
-			allowedModels = defaultAgyModels
-		}
-		if !contains(allowedModels, client.Model) {
-			return fmt.Errorf("client %q has unsupported agy model %q", id, client.Model)
-		}
 		if !contains([]string{"low", "medium", "high"}, client.Effort) {
 			return fmt.Errorf("client %q has unsupported agy effort %q", id, client.Effort)
 		}
@@ -339,9 +332,6 @@ func applyClientOverrides(
 	bypassPermission *bool,
 ) (ClientConfig, error) {
 	if model != "" {
-		if !contains(clientModelChoices(client), model) {
-			return ClientConfig{}, fmt.Errorf("client %q does not support model %q", clientID, model)
-		}
 		client.Model = model
 	}
 	if effort != "" {

@@ -54,6 +54,9 @@ plans/                        # autop design plans
   bound values 與 `pflag.Flag.Changed`。
 - Profile 的 `auto_approve` 只提供 wizard 預設值。直接執行必須明確提供
   `--bypass-permission=true` 才加入 dangerous permission flag。
+- Client 的 `models` 只是 wizard 選單來源，不是 allowlist。`--model` 接受任意字串並
+  原樣傳給下游 CLI，新模型上線不需先改設定。`efforts` 仍是 allowlist，因為 effort
+  值會映射到各 driver 的固定 flag。
 - 所有 Claude profile 的 `command` 一律是 `claude`。Profile 差異由 `settings` 檔與
   `credential` environment mapping 表示，不依賴 `~/bin` 下的 wrapper script
   （`claudem`／`claudew`），因此 autop 只需 `claude` 在 PATH 上即可執行全部 profile。

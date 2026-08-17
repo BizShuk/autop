@@ -265,6 +265,31 @@ func TestClientEffortChoicesSortsFromMaximumToLow(t *testing.T) {
 	}
 }
 
+func TestApplyClientOverridesAcceptsModelOutsideChoices(t *testing.T) {
+	client := ClientConfig{
+		Driver:          "grok",
+		Command:         "grok",
+		Model:           "grok-4.6",
+		Models:          []string{"grok-4.6", "grok-4.5"},
+		Effort:          "high",
+		Efforts:         []string{"low", "medium", "high", "xhigh"},
+		PromptTransport: "argument",
+		Credential:      CredentialConfig{Mode: "env", SourceEnv: "GROK_KEY", TargetEnv: "GROK_API_KEY"},
+	}
+
+	got, err := applyClientOverrides("grok", client, "grok-9.9-preview", "", nil)
+	if err != nil {
+		t.Fatalf("applyClientOverrides() error = %v", err)
+	}
+	if got.Model != "grok-9.9-preview" {
+		t.Fatalf("applyClientOverrides() model = %q, want %q", got.Model, "grok-9.9-preview")
+	}
+
+	if _, err := applyClientOverrides("grok", client, "", "ultra", nil); err == nil {
+		t.Fatal("applyClientOverrides() accepted effort outside configured choices")
+	}
+}
+
 func TestExampleSettingsIsValid(t *testing.T) {
 	content, err := os.ReadFile("settings.example.json")
 	if err != nil {
