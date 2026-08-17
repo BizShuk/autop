@@ -61,12 +61,14 @@
       "driver": "grok",
       "command": "grok",
       "auto_approve": true,
-      "model": "grok-4.5",
+      "model": "grok-4.6",
       "models": [
+        "grok-4.6",
         "grok-4.5"
       ],
       "effort": "high",
       "efforts": [
+        "xhigh",
         "high",
         "medium",
         "low"

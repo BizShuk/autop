@@ -114,6 +114,18 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 			settings.Clients["codex"].Models,
 		)
 	}
+	if !contains(settings.Clients["grok"].Models, "grok-4.6") {
+		t.Fatalf(
+			"grok model choices = %#v, want grok-4.6",
+			settings.Clients["grok"].Models,
+		)
+	}
+	if !contains(settings.Clients["grok"].Efforts, "xhigh") {
+		t.Fatalf(
+			"grok effort choices = %#v, want xhigh",
+			settings.Clients["grok"].Efforts,
+		)
+	}
 	for clientID, client := range settings.Clients {
 		if client.Disabled {
 			continue
@@ -200,7 +212,7 @@ func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 		"grok": {
 			driver:     "grok",
 			command:    "grok",
-			model:      "grok-4.5",
+			model:      "grok-4.6",
 			effort:     "high",
 			credential: CredentialConfig{Mode: "oauth"},
 		},
