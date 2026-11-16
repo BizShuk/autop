@@ -1,6 +1,8 @@
 ---
 name: autop
 description: Use when running or scripting the `autop` CLI facade — launching a local LLM CLI (agy, claude/claudem/claudew/claudep, codex, grok) through one entry point, choosing a client with -c, applying a prompt template with -t, overriding model/effort, bypassing CLI permission prompts, inspecting or editing ~/.config/autop settings, or registering an autop PM2 task via `autop wizard`. Triggers on "autop", "跑 autop", "用 codex/claude 跑這個 prompt", "autop wizard", "autop config", "ecosystem.config.js autop task".
+metadata:
+    source: https://github.com/BizShuk/autop
 ---
 
 # autop CLI
