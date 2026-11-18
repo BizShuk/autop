@@ -38,7 +38,7 @@ Go 原始碼（那是一般 Go 開發，走 golang-dev）。
 | 只印命令不執行              | `autop --dry-run -c codex -t system`                  |
 | 建 PM2 task                 | `autop wizard`（alias `autop w`）                     |
 | 看合併設定                  | `autop config` / `autop config --source`              |
-| 寫入預設設定檔              | `autop config default`（升級後補欄位用 `--merge`）    |
+| 寫入預設設定檔              | `autop config default`（預設即 merge,補缺欄位並先備份）    |
 | 改單一設定值                | `autop config --update clients.codex.model=gpt-5.5`   |
 
 Root flags 只有七個：`-c/--client`、`-t/--template`、`--model`、`--effort`、
