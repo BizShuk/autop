@@ -3,7 +3,7 @@ module github.com/bizshuk/autop
 go 1.26.3
 
 require (
-	github.com/bizshuk/gosdk v1.3.27
+	github.com/bizshuk/gosdk v1.3.28
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0

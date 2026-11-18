@@ -1,5 +1,5 @@
-github.com/bizshuk/gosdk v1.3.27 h1:ZUsoT3zuMd0/0fHHsJp9hu5hldN13SMqvP58RwLe9RU=
-github.com/bizshuk/gosdk v1.3.27/go.mod h1:EqyGgu1mgQ2JGFglktrR+8oaDJZwAKz1ABk4mu4V2eM=
+github.com/bizshuk/gosdk v1.3.28 h1:lS7dprXznSJci7N3F5fKWFajIUpjyKowbt4w4kAOjYs=
+github.com/bizshuk/gosdk v1.3.28/go.mod h1:EqyGgu1mgQ2JGFglktrR+8oaDJZwAKz1ABk4mu4V2eM=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

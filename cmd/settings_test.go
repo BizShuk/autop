@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/bizshuk/autop/config/example"
 	gosdkconfigcmd "github.com/bizshuk/gosdk/cmd/config"
 	gosdkconfig "github.com/bizshuk/gosdk/config"
 	"github.com/spf13/viper"
@@ -57,7 +58,7 @@ func TestValidateSettingsRejectsUnknownDriver(t *testing.T) {
 
 func TestRegisteredDefaultsProduceValidSettings(t *testing.T) {
 	defaultViper := viper.New()
-	registerDefaults(defaultViper)
+	mergeExampleDefaults(t, defaultViper)
 
 	var settings Settings
 	if err := defaultViper.Unmarshal(&settings); err != nil {
@@ -344,7 +345,7 @@ func TestExampleSettingsIsRegisteredAsSDKDefault(t *testing.T) {
 
 func TestClientLeafOverrideKeepsOtherDefaults(t *testing.T) {
 	defaultViper := viper.New()
-	registerDefaults(defaultViper)
+	mergeExampleDefaults(t, defaultViper)
 	if err := defaultViper.MergeConfigMap(map[string]any{
 		"default_client": "agy",
 		"clients": map[string]any{
@@ -427,4 +428,17 @@ func testSettings() Settings {
 
 func missingEnv(string) (string, bool) {
 	return "", false
+}
+
+// mergeExampleDefaults installs the example settings as the lowest layer of v,
+// the way gosdkconfig.WithDefaultValue does for the global viper.
+func mergeExampleDefaults(t *testing.T, v *viper.Viper) {
+	t.Helper()
+	defaults, err := gosdkconfig.ParseJSON(example.Settings)
+	if err != nil {
+		t.Fatalf("ParseJSON(example) error = %v", err)
+	}
+	if err := v.MergeConfigMap(defaults); err != nil {
+		t.Fatalf("MergeConfigMap(example) error = %v", err)
+	}
 }
