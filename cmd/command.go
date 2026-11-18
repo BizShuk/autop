@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"strings"
 
+	_ "github.com/bizshuk/autop/config/example"
+
 	autopdriver "github.com/bizshuk/autop/cmd/driver"
 	gosdkcmd "github.com/bizshuk/gosdk/cmd"
 	"github.com/spf13/cobra"

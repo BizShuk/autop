@@ -291,7 +291,7 @@ func TestApplyClientOverridesAcceptsModelOutsideChoices(t *testing.T) {
 }
 
 func TestExampleSettingsIsValid(t *testing.T) {
-	content, err := os.ReadFile("settings.example.json")
+	content, err := os.ReadFile("../config/example/settings.example.json")
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
@@ -333,7 +333,7 @@ func TestExampleSettingsIsRegisteredAsSDKDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ReadFile() error = %v", err)
 	}
-	want, err := os.ReadFile("settings.example.json")
+	want, err := os.ReadFile("../config/example/settings.example.json")
 	if err != nil {
 		t.Fatalf("ReadFile(settings.example.json) error = %v", err)
 	}

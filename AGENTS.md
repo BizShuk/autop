@@ -7,8 +7,6 @@ main.go                       # binary entry point、signal 與 exit code
 cmd/
 ├── command.go                # RootCmd、root flags、runtime wiring 與 command execution
 ├── settings.go               # gosdk config.Default、defaults 與 validation
-├── defaults.go               # embed settings.example.json 並註冊 SDK default seed
-├── settings.example.json     # 完整 client、credential 與 template 範例
 ├── template.go               # Go text/template renderer
 ├── driver/
 │   ├── driver.go             # ClientConfig、CredentialConfig、Process、Prepare
@@ -22,6 +20,7 @@ cmd/
 ├── install.go                # managed ecosystem.config.js atomic update
 ├── matrix_test.go            # client × flag → command line golden matrix
 └── *_test.go                 # command、settings、template、runner、wizard tests
+config/example/               # settings.example.json(完整 client、credential 與 template 範例)+ example.go 登記給 config default
 scripts/
 ├── generate-wizard-commands.sh    # 對每個 client 跑一次非互動 wizard
 └── generate-dry-run-matrix.sh     # -c × -t × --model × --bypass-permission dry run
