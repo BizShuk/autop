@@ -1,5 +1,5 @@
-github.com/bizshuk/gosdk v1.3.28 h1:lS7dprXznSJci7N3F5fKWFajIUpjyKowbt4w4kAOjYs=
-github.com/bizshuk/gosdk v1.3.28/go.mod h1:EqyGgu1mgQ2JGFglktrR+8oaDJZwAKz1ABk4mu4V2eM=
+github.com/bizshuk/gosdk v1.8.5 h1:fRp9MMTeTTK/G0p0L9hotIriUGYIPmLFeVuhfefwAhc=
+github.com/bizshuk/gosdk v1.8.5/go.mod h1:EqyGgu1mgQ2JGFglktrR+8oaDJZwAKz1ABk4mu4V2eM=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -9,6 +9,8 @@ github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/go-viper/mapstructure/v2 v2.4.0 h1:EBsztssimR/CONLSZZ04E8qAkxNYq4Qp9LvH92wZUgs=
 github.com/go-viper/mapstructure/v2 v2.4.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
+github.com/gocarina/gocsv v0.0.0-20260523204920-c264028e67ea h1:XvL0wVLiLmxbUB0xbPE3vY70Qrk0bkCdD8h7SL1Hyl4=
+github.com/gocarina/gocsv v0.0.0-20260523204920-c264028e67ea/go.mod h1:5YoVOkjYAQumqlV356Hj3xeYh4BdZuLE0/nRkf2NKkI=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=

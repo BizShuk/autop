@@ -119,7 +119,7 @@ command、ecosystem 路徑與完整 configuration。註冊後用 `pm2 start ecos
 | `client "claudet" is disabled`                                  | profile `disabled: true`，改用其他 client                                                                             |
 | `client "x" requires environment variable Y`                    | env-mode credential 沒 export source env                                                                              |
 | CLI 卡在權限詢問                                                | 忘了 `--bypass-permission=true`（`auto_approve` 不會自動生效）                                                        |
-| 新版本新增的 client 不在 `autop config` 輸出                    | 設定檔是舊的；跑 `autop config default --merge`。Runtime 仍可用 embedded default，所以 `-c grok` 能跑但 config 看不到 |
+| 新版本新增的 client 不在 `autop config` 輸出                    | 設定檔是舊的；跑 `autop config default`。Runtime 仍可用 embedded default，所以 `-c grok` 能跑但 config 看不到 |
 
 Exit code：child CLI 的 exit code 會原樣傳回；autop 自身錯誤回 `2`。
 

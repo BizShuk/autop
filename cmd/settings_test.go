@@ -319,7 +319,7 @@ func TestExampleSettingsIsRegisteredAsSDKDefault(t *testing.T) {
 
 	report, err := gosdkconfigcmd.Default(
 		"settings.json",
-		gosdkconfigcmd.DefaultModeSkip,
+		gosdkconfigcmd.DefaultModeMerge,
 		false,
 		false,
 	)

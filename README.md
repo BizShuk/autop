@@ -31,7 +31,7 @@ autop config --source
 autop config default
 
 # 升級時只補上新欄位，不覆蓋既有值
-autop config default --merge
+autop config default
 
 # 更新 user-level settings.local.json
 autop config --update clients.codex.model=gpt-5.5
