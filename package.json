@@ -10,6 +10,7 @@
     "test:scripts": "bash scripts/generate-wizard-commands_test.sh",
     "build": "go build -o bin/autop .",
     "deploy": "go install .",
+    "install": "go install .",
     "lint": "npx npm-run-all --parallel lint:*",
     "lint:go": "gofmt -l . && go vet ./...",
     "lint:tidy": "go mod tidy -diff",
